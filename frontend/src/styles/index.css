@@ -1,0 +1,65 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  min-height: 100vh;
+}
+
+.app-bg {
+  @apply min-h-screen bg-mesh-light text-slate-900 transition-colors duration-300;
+}
+
+.dark .app-bg {
+  @apply bg-mesh-dark text-slate-100;
+}
+
+.glass {
+  @apply rounded-2xl border border-white/35 bg-white/70 backdrop-blur-xl;
+}
+
+.dark .glass {
+  @apply border-slate-700/60 bg-slateglass;
+}
+
+.section-title {
+  @apply font-display text-xl font-semibold tracking-tight;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/25;
+}
+
+.dark .input {
+  @apply border-slate-700 bg-slate-900/70 text-slate-100;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-accent to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:-translate-y-0.5 hover:opacity-95;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white;
+}
+
+.dark .btn-secondary {
+  @apply border-slate-700 bg-slate-900/70 text-slate-100 hover:bg-slate-800;
+}
+
+.badge {
+  @apply rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600;
+}
+
+.dark .badge {
+  @apply bg-slate-800 text-slate-300;
+}
