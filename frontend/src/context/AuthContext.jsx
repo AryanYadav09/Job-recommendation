@@ -54,8 +54,12 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (payload) => {
     const { data } = await api.post("/auth/register", payload);
-    setSession(data.token, data.user);
+    // No auto-login — user must verify their Gmail first
     return data;
+  };
+
+  const loginWithData = (tokenValue, userData) => {
+    setSession(tokenValue, userData);
   };
 
   const logout = () => clearSession();
@@ -68,6 +72,7 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
+      loginWithData,
       refreshUser: fetchMe,
       isAuthenticated: Boolean(user)
     }),

@@ -8,6 +8,7 @@ export const errorHandler = (err, _req, res, _next) => {
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
     message: err.message || "Server error",
+    code: err.code || undefined,
     stack: process.env.NODE_ENV === "production" ? undefined : err.stack
   });
 };

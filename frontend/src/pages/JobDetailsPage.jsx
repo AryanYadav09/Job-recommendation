@@ -1,6 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Building2, MapPin, Wallet } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -67,7 +66,7 @@ const JobDetailsPage = () => {
 
   return (
     <PageTransition>
-      <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass p-6">
+      <section className="glass p-6">
         <button className="btn-secondary mb-4" onClick={() => navigate(-1)}>
           Back
         </button>
@@ -104,7 +103,7 @@ const JobDetailsPage = () => {
             <button className="btn-primary" onClick={onApply}>Apply Now</button>
           </div>
         ) : null}
-      </motion.section>
+      </section>
     </PageTransition>
   );
 };

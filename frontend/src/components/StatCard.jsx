@@ -1,6 +1,4 @@
-﻿import { motion } from "framer-motion";
-
-const StatCard = ({ label, value, accent = "accent" }) => {
+﻿const StatCard = ({ label, value, accent = "accent" }) => {
   const accentClass = {
     accent: "text-accent",
     green: "text-accent2",
@@ -9,11 +7,12 @@ const StatCard = ({ label, value, accent = "accent" }) => {
   }[accent] || "text-accent";
 
   return (
-    <motion.div whileHover={{ y: -4 }} className="glass p-4">
+    <div className="glass p-4 transition hover:shadow-md">
       <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
       <p className={`mt-1 font-display text-2xl font-semibold ${accentClass}`}>{value}</p>
-    </motion.div>
+    </div>
   );
 };
 
 export default StatCard;
+

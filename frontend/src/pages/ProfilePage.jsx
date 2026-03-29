@@ -1,13 +1,16 @@
 ﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
 import StatCard from "../components/StatCard";
 import { parseTagsInput, formatDate } from "../utils/format";
+import { Bookmark, BookmarkX, Briefcase, Building2, MapPin } from "lucide-react";
 
 const jobTypeOptions = ["remote", "full-time", "internship", "part-time", "hybrid"];
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     skills: "",
@@ -21,6 +24,7 @@ const ProfilePage = () => {
     expectedSalaryMax: "",
     location: ""
   });
+  const [savedJobs, setSavedJobs] = useState([]);
   const [activity, setActivity] = useState({
     counters: { views: 0, saves: 0, applies: 0 },
     applications: []
@@ -35,6 +39,7 @@ const ProfilePage = () => {
     ]);
 
     const profile = profileRes.data;
+    setSavedJobs(profile.savedJobs || []);
     setForm({
       name: profile.name || "",
       skills: (profile.skills || []).join(", "),
@@ -81,6 +86,15 @@ const ProfilePage = () => {
       fetchData().catch(() => null);
     } catch (error) {
       setMessage(error.response?.data?.message || "Unable to update profile");
+    }
+  };
+
+  const handleUnsave = async (jobId) => {
+    try {
+      await api.post(`/jobs/${jobId}/save`);
+      setSavedJobs((prev) => prev.filter((j) => j._id !== jobId));
+    } catch {
+      // silent
     }
   };
 
@@ -205,6 +219,56 @@ const ProfilePage = () => {
             <StatCard label="Views" value={activity.counters.views} accent="blue" />
             <StatCard label="Saves" value={activity.counters.saves} accent="accent" />
             <StatCard label="Applies" value={activity.counters.applies} accent="green" />
+          </div>
+
+          <div className="glass p-5">
+            <h2 className="section-title flex items-center gap-2">
+              <Bookmark size={16} className="text-accent" /> Saved Jobs
+              <span className="ml-auto rounded-full bg-accent/15 px-2.5 py-0.5 text-xs font-semibold text-accent">
+                {savedJobs.length}
+              </span>
+            </h2>
+            <div className="mt-4 space-y-3">
+              {savedJobs.length ? (
+                savedJobs.map((job) => (
+                  <article
+                    key={job._id}
+                    className="rounded-xl border border-slate-200/70 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p
+                          className="cursor-pointer truncate font-semibold hover:text-accent"
+                          onClick={() => navigate(`/jobs/${job._id}`)}
+                        >
+                          {job.title}
+                        </p>
+                        <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                          <Building2 size={11} /> {job.company?.name || "—"}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleUnsave(job._id)}
+                        className="shrink-0 rounded-lg p-1.5 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-900/20"
+                        title="Remove from saved"
+                      >
+                        <BookmarkX size={15} />
+                      </button>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="inline-flex items-center gap-1"><MapPin size={11} /> {job.location}</span>
+                      <span className="inline-flex items-center gap-1"><Briefcase size={11} /> {job.category}</span>
+                      {job.salaryRange && job.salaryRange !== "Not disclosed" && (
+                        <span className="font-medium text-emerald-600 dark:text-emerald-400">{job.salaryRange}</span>
+                      )}
+                    </div>
+                    <span className="badge mt-2 capitalize">{job.type}</span>
+                  </article>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">No saved jobs yet.</p>
+              )}
+            </div>
           </div>
 
           <div className="glass p-5">

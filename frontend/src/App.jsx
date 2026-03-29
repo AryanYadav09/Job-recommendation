@@ -6,6 +6,7 @@ import UserOnboardingGuard from "./components/UserOnboardingGuard";
 import AppShell from "./components/AppShell";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import JobFeedPage from "./pages/JobFeedPage";
 import JobDetailsPage from "./pages/JobDetailsPage";
@@ -28,6 +29,7 @@ const App = () => {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       <Route element={<ProtectedRoute />}>

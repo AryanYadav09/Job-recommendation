@@ -1,6 +1,5 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { parseTagsInput } from "../utils/format";
@@ -85,11 +84,9 @@ const OnboardingPage = () => {
   return (
     <PageTransition>
       <section className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-        <motion.form
+        <form
           onSubmit={handleSubmit}
           className="glass p-6 md:p-8"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="font-display text-3xl">Let us personalize your job feed</h1>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
@@ -198,12 +195,10 @@ const OnboardingPage = () => {
           <button className="btn-primary mt-6" disabled={loading}>
             {loading ? "Saving preferences..." : "Complete setup"}
           </button>
-        </motion.form>
+        </form>
 
-        <motion.div
+        <div
           className="glass overflow-hidden p-0"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
         >
           <img
             src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80"
@@ -218,7 +213,7 @@ const OnboardingPage = () => {
               <li>Faster personalization from your first session.</li>
             </ul>
           </div>
-        </motion.div>
+        </div>
       </section>
     </PageTransition>
   );

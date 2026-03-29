@@ -1,8 +1,9 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { BriefcaseBusiness, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { homeByUser } from "../utils/roleHome";
+import api from "../services/api";
 
 const SignupPage = () => {
   const { register, isAuthenticated, user } = useAuth();
@@ -16,6 +17,9 @@ const SignupPage = () => {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -37,6 +41,7 @@ const SignupPage = () => {
       };
       if (form.role === "COMPANY") payload.companyName = form.companyName;
       await register(payload);
+      setRegisteredEmail(form.email);
     } catch (err) {
       setError(err.response?.data?.message || "Unable to sign up");
     } finally {
@@ -44,13 +49,70 @@ const SignupPage = () => {
     }
   };
 
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      const { data } = await api.post("/auth/resend-verification", { email: registeredEmail });
+      setResendMessage(data.message);
+    } catch {
+      setResendMessage("Failed to resend. Please try again.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  // Show success / check-your-email state
+  if (registeredEmail) {
+    return (
+      <div className="app-bg grid min-h-screen place-content-center px-4 py-10">
+        <div className="glass w-full max-w-md p-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="rounded-2xl bg-sky-100 p-4 dark:bg-sky-900/30">
+              <Mail size={36} className="text-accent" />
+            </div>
+          </div>
+          <h1 className="font-display text-2xl font-semibold">Check your Gmail!</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            We sent a verification link to{" "}
+            <span className="font-semibold text-accent">{registeredEmail}</span>.
+            Click the link to activate your account.
+          </p>
+          <p className="mt-4 text-xs text-slate-400">The link expires in 24 hours.</p>
+
+          {resendMessage ? (
+            <p className="mt-4 rounded-xl border border-sky-400/40 bg-sky-500/10 px-3 py-2 text-sm text-sky-700 dark:text-sky-300">
+              {resendMessage}
+            </p>
+          ) : null}
+
+          <button
+            className="btn-secondary mt-5 w-full"
+            onClick={handleResend}
+            disabled={resendLoading}
+          >
+            {resendLoading ? "Sending..." : "Resend verification email"}
+          </button>
+          <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+            Already verified?{" "}
+            <Link className="font-semibold text-accent" to="/login">Login</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="app-bg grid min-h-screen place-content-center px-4">
-      <motion.form
+    <div className="app-bg grid min-h-screen place-content-center px-4 py-10">
+      <div className="mb-6 flex flex-col items-center gap-2 text-center">
+        <div className="rounded-2xl bg-accent/15 p-3 text-accent">
+          <BriefcaseBusiness size={28} />
+        </div>
+        <p className="font-display text-xl font-semibold">JobPulse</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Smart job recommendations</p>
+      </div>
+      <form
         onSubmit={onSubmit}
         className="glass w-full max-w-lg p-7"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
       >
         <h1 className="font-display text-2xl">Create account</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -115,7 +177,7 @@ const SignupPage = () => {
             Login
           </Link>
         </p>
-      </motion.form>
+      </form>
     </div>
   );
 };

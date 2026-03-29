@@ -1,8 +1,10 @@
-﻿import User from "../models/User.js";
+﻿import crypto from "crypto";
+import User from "../models/User.js";
 import Company from "../models/Company.js";
 import { generateToken } from "../utils/generateToken.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { handleValidation } from "../utils/handleValidation.js";
+import { sendVerificationEmail } from "../utils/emailService.js";
 
 const userResponse = async (userId) => {
   const user = await User.findById(userId).select("-password").populate("company");
@@ -33,12 +35,18 @@ export const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
   const user = await User.create({
     name,
     email,
     password,
     role,
-    onboardingCompleted: role !== "USER"
+    onboardingCompleted: role !== "USER",
+    isEmailVerified: false,
+    emailVerificationToken: verificationToken,
+    emailVerificationExpires: verificationExpires
   });
 
   if (role === "COMPANY") {
@@ -50,12 +58,10 @@ export const register = asyncHandler(async (req, res) => {
     await user.save();
   }
 
-  const safeUser = await userResponse(user._id);
+  await sendVerificationEmail(email, verificationToken);
 
   res.status(201).json({
-    message: "User registered successfully",
-    token: generateToken(user._id, user.role),
-    user: safeUser
+    message: "Account created! A verification link has been sent to your Gmail. Please check your inbox."
   });
 });
 
@@ -71,6 +77,13 @@ export const login = asyncHandler(async (req, res) => {
     throw error;
   }
 
+  if (!user.isEmailVerified) {
+    const error = new Error("Please verify your Gmail address before logging in.");
+    error.statusCode = 403;
+    error.code = "EMAIL_UNVERIFIED";
+    throw error;
+  }
+
   const safeUser = await userResponse(user._id);
 
   res.json({
@@ -80,7 +93,56 @@ export const login = asyncHandler(async (req, res) => {
   });
 });
 
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+
+  const user = await User.findOne({
+    emailVerificationToken: token,
+    emailVerificationExpires: { $gt: new Date() }
+  });
+
+  if (!user) {
+    const error = new Error("Verification link is invalid or has expired. Please request a new one.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = null;
+  user.emailVerificationExpires = null;
+  await user.save();
+
+  const safeUser = await userResponse(user._id);
+
+  res.json({
+    message: "Gmail verified successfully! Welcome to JobPulse.",
+    token: generateToken(user._id, user.role),
+    user: safeUser
+  });
+});
+
+export const resendVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user || user.isEmailVerified) {
+    // Intentionally vague to avoid email enumeration
+    return res.json({ message: "If that Gmail is registered and unverified, a new link has been sent." });
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  user.emailVerificationToken = verificationToken;
+  user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  await user.save();
+
+  await sendVerificationEmail(email, verificationToken);
+
+  res.json({ message: "Verification email resent. Please check your Gmail." });
+});
+
 export const getMe = asyncHandler(async (req, res) => {
   const user = await userResponse(req.user._id);
   res.json(user);
 });
+

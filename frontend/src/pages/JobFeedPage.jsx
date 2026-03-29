@@ -1,6 +1,5 @@
 ﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Target, TrendingUp } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -119,44 +118,47 @@ const JobFeedPage = () => {
   return (
     <PageTransition>
       <section className="mb-8 grid gap-5 lg:grid-cols-[1.2fr_1fr]">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass relative overflow-hidden p-0"
-        >
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 shadow-lg">
+          {/* Background image with stronger overlay */}
           <img
             src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80"
             alt="Team collaborating on modern tech projects"
-            className="h-72 w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/75 via-slate-900/40 to-transparent" />
-          <div className="absolute inset-0 p-6 md:p-8">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-              <Sparkles size={14} /> AI-inspired recommendations
+          {/* Accent colour wash */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-transparent to-accent2/20" />
+          {/* Bottom fade */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/80 to-transparent" />
+
+          <div className="relative flex h-full min-h-[17rem] flex-col justify-between p-6 md:p-8">
+            {/* Top badge */}
+            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+              <Sparkles size={13} className="text-sky-300" /> AI-powered recommendations
             </span>
-            <h1 className="mt-4 max-w-lg font-display text-3xl leading-tight text-white md:text-4xl">
-              Discover roles that fit your skills, goals, and salary expectations.
-            </h1>
-            <p className="mt-3 max-w-lg text-sm text-slate-100/90 md:text-base">
-              Your feed starts from onboarding preferences and keeps adapting with every view,
-              save, and application.
-            </p>
-            <button
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5"
-              onClick={() => document.getElementById("explore-jobs")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Explore opportunities <ArrowRight size={15} />
-            </button>
+
+            {/* Headline block */}
+            <div>
+              <h1 className="mt-4 max-w-md font-display text-2xl font-bold leading-snug text-white md:text-3xl">
+                Discover roles built around{" "}
+                <span className="text-sky-300">your skills</span> and{" "}
+                <span className="text-emerald-300">salary goals</span>.
+              </h1>
+              <p className="mt-2.5 max-w-sm text-sm leading-relaxed text-slate-300/90">
+                Your feed adapts with every view, save, and application — getting smarter over time.
+              </p>
+
+              <button
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 shadow transition hover:bg-sky-50 active:scale-95"
+                onClick={() => document.getElementById("explore-jobs")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Explore opportunities <ArrowRight size={15} />
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="grid gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="glass p-5"
-          >
+          <div className="glass p-5">
             <h2 className="section-title">Your recommendation profile</h2>
             <div className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
               <p className="inline-flex items-center gap-2">
@@ -171,21 +173,16 @@ const JobFeedPage = () => {
                 {user.expectedSalaryMax ? `$${Math.round(user.expectedSalaryMax / 1000)}k` : "-"}
               </p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="glass p-5"
-          >
+          <div className="glass p-5">
             <h2 className="section-title">How ranking works</h2>
             <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
               <li>50% profile match (skills + job preferences)</li>
               <li>30% behavior score from views, saves, applies</li>
               <li>20% collaborative signal from similar users</li>
             </ul>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -193,17 +190,16 @@ const JobFeedPage = () => {
         <h2 className="section-title mb-3">Trending domains to explore</h2>
         <div className="grid gap-4 md:grid-cols-3">
           {spotlightTracks.map((track) => (
-            <motion.article
+            <article
               key={track.title}
-              className="glass overflow-hidden p-0"
-              whileHover={{ y: -5 }}
+              className="glass overflow-hidden p-0 transition hover:shadow-lg"
             >
               <img src={track.image} alt={track.title} className="h-44 w-full object-cover" />
               <div className="p-4">
                 <h3 className="font-display text-lg">{track.title}</h3>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{track.description}</p>
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </section>

@@ -166,7 +166,8 @@ const seed = async () => {
     interests: ["platform management"],
     experienceLevel: "SENIOR",
     location: "Austin, TX",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const companyUserA = await User.create({
@@ -175,7 +176,8 @@ const seed = async () => {
     password: "company123",
     role: "COMPANY",
     location: "San Francisco, CA",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const companyUserB = await User.create({
@@ -184,7 +186,8 @@ const seed = async () => {
     password: "company123",
     role: "COMPANY",
     location: "New York, NY",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const companyUserC = await User.create({
@@ -193,7 +196,8 @@ const seed = async () => {
     password: "company123",
     role: "COMPANY",
     location: "Seattle, WA",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const companyA = await Company.create({
@@ -248,7 +252,8 @@ const seed = async () => {
     expectedSalaryMin: 95000,
     expectedSalaryMax: 145000,
     location: "Remote",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const userB = await User.create({
@@ -266,7 +271,8 @@ const seed = async () => {
     expectedSalaryMin: 105000,
     expectedSalaryMax: 155000,
     location: "New York, NY",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const userC = await User.create({
@@ -284,7 +290,8 @@ const seed = async () => {
     expectedSalaryMin: 85000,
     expectedSalaryMax: 130000,
     location: "San Francisco, CA",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const userD = await User.create({
@@ -302,7 +309,8 @@ const seed = async () => {
     expectedSalaryMin: 90000,
     expectedSalaryMax: 135000,
     location: "Remote",
-    onboardingCompleted: true
+    onboardingCompleted: true,
+    isEmailVerified: true
   });
 
   const companyRefs = [
@@ -335,6 +343,272 @@ const seed = async () => {
       });
     });
   });
+
+  // Add 20 additional jobs for recommendation system testing
+  const additionalTestJobs = [
+    {
+      title: "Senior ML Engineer",
+      description: "Lead machine learning initiatives and build scalable models for production systems.",
+      requiredSkills: ["python", "tensorflow", "pytorch", "machine learning", "aws"],
+      category: "Data Science",
+      location: "Remote",
+      type: "full-time",
+      salaryMin: 150000,
+      salaryMax: 190000,
+      salaryRange: "$150k-$190k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "React Native Developer",
+      description: "Build cross-platform mobile applications with React Native and Expo.",
+      requiredSkills: ["react native", "javascript", "typescript", "firebase", "react"],
+      category: "Mobile",
+      location: "Austin, TX",
+      type: "hybrid",
+      salaryMin: 105000,
+      salaryMax: 140000,
+      salaryRange: "$105k-$140k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "Infrastructure Engineer",
+      description: "Design and maintain cloud infrastructure using Terraform and Kubernetes.",
+      requiredSkills: ["kubernetes", "terraform", "aws", "devops", "docker"],
+      category: "DevOps",
+      location: "New York, NY",
+      type: "remote",
+      salaryMin: 125000,
+      salaryMax: 165000,
+      salaryRange: "$125k-$165k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "Security Engineer",
+      description: "Protect applications and infrastructure from security threats and vulnerabilities.",
+      requiredSkills: ["network security", "python", "siem", "cloud security", "linux"],
+      category: "Cybersecurity",
+      location: "Washington, DC",
+      type: "full-time",
+      salaryMin: 130000,
+      salaryMax: 170000,
+      salaryRange: "$130k-$170k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "Vue.js Developer",
+      description: "Build dynamic single-page applications using Vue.js and modern tooling.",
+      requiredSkills: ["vue.js", "javascript", "typescript", "scss", "webpack"],
+      category: "Frontend",
+      location: "Remote",
+      type: "remote",
+      salaryMin: 88000,
+      salaryMax: 128000,
+      salaryRange: "$88k-$128k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "PostgreSQL Database Administrator",
+      description: "Manage, optimize, and maintain PostgreSQL databases for high-traffic applications.",
+      requiredSkills: ["postgresql", "sql", "database optimization", "linux", "bash"],
+      category: "Backend",
+      location: "Seattle, WA",
+      type: "hybrid",
+      salaryMin: 110000,
+      salaryMax: 150000,
+      salaryRange: "$110k-$150k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "Product Designer",
+      description: "Lead design initiatives and create compelling user experiences for web and mobile.",
+      requiredSkills: ["figma", "ux research", "interaction design", "prototyping", "user testing"],
+      category: "Design",
+      location: "San Francisco, CA",
+      type: "full-time",
+      salaryMin: 105000,
+      salaryMax: 145000,
+      salaryRange: "$105k-$145k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "Python Backend Developer",
+      description: "Build robust APIs and backend services using Python and modern frameworks.",
+      requiredSkills: ["python", "fastapi", "postgresql", "redis", "docker"],
+      category: "Backend",
+      location: "Remote",
+      type: "remote",
+      salaryMin: 100000,
+      salaryMax: 140000,
+      salaryRange: "$100k-$140k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "Analytics Engineer",
+      description: "Transform raw data into actionable insights using SQL and modern analytics tools.",
+      requiredSkills: ["sql", "analytics", "dbt", "tableau", "python"],
+      category: "Data Science",
+      location: "Boston, MA",
+      type: "hybrid",
+      salaryMin: 100000,
+      salaryMax: 140000,
+      salaryRange: "$100k-$140k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "Performance Engineer",
+      description: "Optimize application performance and identify bottlenecks in production systems.",
+      requiredSkills: ["javascript", "performance optimization", "profiling", "node.js", "react"],
+      category: "Frontend",
+      location: "Austin, TX",
+      type: "full-time",
+      salaryMin: 110000,
+      salaryMax: 150000,
+      salaryRange: "$110k-$150k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "iOS Developer",
+      description: "Create native iOS applications with Swift and deliver exceptional mobile experiences.",
+      requiredSkills: ["swift", "ios", "objective-c", "xcode", "swiftui"],
+      category: "Mobile",
+      location: "San Jose, CA",
+      type: "hybrid",
+      salaryMin: 115000,
+      salaryMax: 155000,
+      salaryRange: "$115k-$155k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "GraphQL API Developer",
+      description: "Design and implement GraphQL APIs for modern web and mobile applications.",
+      requiredSkills: ["graphql", "node.js", "typescript", "apollo", "mongodb"],
+      category: "Backend",
+      location: "Denver, CO",
+      type: "hybrid",
+      salaryMin: 105000,
+      salaryMax: 145000,
+      salaryRange: "$105k-$145k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "Design Systems Lead",
+      description: "Lead the development of comprehensive design systems for consistent product experiences.",
+      requiredSkills: ["figma", "design systems", "component design", "documentation", "accessibility"],
+      category: "Design",
+      location: "Remote",
+      type: "remote",
+      salaryMin: 120000,
+      salaryMax: 160000,
+      salaryRange: "$120k-$160k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "Cloud Architect",
+      description: "Design scalable cloud solutions and lead infrastructure initiatives.",
+      requiredSkills: ["aws", "azure", "architecture design", "terraform", "kubernetes"],
+      category: "DevOps",
+      location: "Chicago, IL",
+      type: "remote",
+      salaryMin: 140000,
+      salaryMax: 180000,
+      salaryRange: "$140k-$180k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "Go Developer",
+      description: "Build high-performance systems and microservices using Go.",
+      requiredSkills: ["go", "microservices", "concurrent programming", "docker", "kubernetes"],
+      category: "Backend",
+      location: "Remote",
+      type: "full-time",
+      salaryMin: 115000,
+      salaryMax: 155000,
+      salaryRange: "$115k-$155k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "Incident Response Specialist",
+      description: "Lead incident response efforts and improve system reliability and security.",
+      requiredSkills: ["incident management", "siem", "security analysis", "linux", "networking"],
+      category: "Cybersecurity",
+      location: "Atlanta, GA",
+      type: "hybrid",
+      salaryMin: 105000,
+      salaryMax: 145000,
+      salaryRange: "$105k-$145k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "Angular Developer",
+      description: "Build enterprise web applications with Angular and TypeScript.",
+      requiredSkills: ["angular", "typescript", "rxjs", "material design", "web components"],
+      category: "Frontend",
+      location: "Boston, MA",
+      type: "hybrid",
+      salaryMin: 100000,
+      salaryMax: 140000,
+      salaryRange: "$100k-$140k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    },
+    {
+      title: "Data Pipeline Engineer",
+      description: "Build and maintain data pipelines and ETL processes for analytics.",
+      requiredSkills: ["python", "apache airflow", "sql", "spark", "aws"],
+      category: "Data Science",
+      location: "San Diego, CA",
+      type: "remote",
+      salaryMin: 110000,
+      salaryMax: 150000,
+      salaryRange: "$110k-$150k",
+      company: companyC._id,
+      postedBy: companyUserC._id
+    },
+    {
+      title: "QA Lead",
+      description: "Lead quality assurance efforts and build robust testing frameworks.",
+      requiredSkills: ["test automation", "pytest", "selenium", "test strategy", "ci/cd"],
+      category: "Quality Assurance",
+      location: "Miami, FL",
+      type: "full-time",
+      salaryMin: 100000,
+      salaryMax: 140000,
+      salaryRange: "$100k-$140k",
+      company: companyA._id,
+      postedBy: companyUserA._id
+    },
+    {
+      title: "Svelte Developer",
+      description: "Build fast and interactive web applications using Svelte framework.",
+      requiredSkills: ["svelte", "javascript", "sveltekit", "scss", "rollup"],
+      category: "Frontend",
+      location: "Portland, OR",
+      type: "remote",
+      salaryMin: 95000,
+      salaryMax: 135000,
+      salaryRange: "$95k-$135k",
+      company: companyB._id,
+      postedBy: companyUserB._id
+    }
+  ];
+
+  generatedJobs.push(...additionalTestJobs);
 
   const jobs = await Job.insertMany(generatedJobs);
 
