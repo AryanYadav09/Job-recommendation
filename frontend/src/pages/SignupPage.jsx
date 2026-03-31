@@ -1,5 +1,5 @@
-﻿import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { BriefcaseBusiness, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { homeByUser } from "../utils/roleHome";
@@ -8,11 +8,17 @@ import api from "../services/api";
 const SignupPage = () => {
   const { register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialRole = useMemo(
+    () => (searchParams.get("role") === "COMPANY" ? "COMPANY" : "USER"),
+    [searchParams]
+  );
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    role: "USER",
+    role: initialRole,
     companyName: ""
   });
   const [error, setError] = useState("");
@@ -26,6 +32,10 @@ const SignupPage = () => {
       navigate(homeByUser(user), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
+
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, role: initialRole }));
+  }, [initialRole]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -61,7 +71,6 @@ const SignupPage = () => {
     }
   };
 
-  // Show success / check-your-email state
   if (registeredEmail) {
     return (
       <div className="app-bg grid min-h-screen place-content-center px-4 py-10">
@@ -94,7 +103,9 @@ const SignupPage = () => {
           </button>
           <p className="mt-4 text-sm text-slate-600 dark:text-slate-300">
             Already verified?{" "}
-            <Link className="font-semibold text-accent" to="/login">Login</Link>
+            <Link className="font-semibold text-accent" to="/login">
+              Login
+            </Link>
           </p>
         </div>
       </div>
@@ -110,13 +121,12 @@ const SignupPage = () => {
         <p className="font-display text-xl font-semibold">JobPulse</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">Smart job recommendations</p>
       </div>
-      <form
-        onSubmit={onSubmit}
-        className="glass w-full max-w-lg p-7"
-      >
+      <form onSubmit={onSubmit} className="glass w-full max-w-lg p-7">
         <h1 className="font-display text-2xl">Create account</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Join as a candidate or company recruiter.
+          {form.role === "COMPANY"
+            ? "Create an employer account to upload and manage jobs."
+            : "Join as a candidate or company recruiter."}
         </p>
 
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -168,7 +178,7 @@ const SignupPage = () => {
         {error ? <p className="mt-3 text-sm text-rose-500">{error}</p> : null}
 
         <button className="btn-primary mt-5 w-full" disabled={loading}>
-          {loading ? "Creating account..." : "Sign up"}
+          {loading ? "Creating account..." : form.role === "COMPANY" ? "Create employer account" : "Sign up"}
         </button>
 
         <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-300">

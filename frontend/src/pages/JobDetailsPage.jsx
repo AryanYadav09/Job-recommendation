@@ -1,10 +1,11 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Building2, MapPin, Wallet } from "lucide-react";
+import { ArrowLeft, Building2, MapPin, Sparkles, Wallet } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import PageTransition from "../components/PageTransition";
+import { formatJobType, formatRelativeTime } from "../utils/format";
 
 const JobDetailsPage = () => {
   const { jobId } = useParams();
@@ -66,44 +67,122 @@ const JobDetailsPage = () => {
 
   return (
     <PageTransition>
-      <section className="glass p-6">
-        <button className="btn-secondary mb-4" onClick={() => navigate(-1)}>
-          Back
-        </button>
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[34px] bg-slate-950 p-6 text-white shadow-lifted md:p-8">
+          <div className="absolute -left-12 top-8 h-48 w-48 rounded-full bg-sky-500/20 blur-3xl" />
+          <div className="absolute right-0 top-0 h-60 w-60 rounded-full bg-blue-500/20 blur-3xl" />
 
-        <h1 className="font-display text-3xl">{job.title}</h1>
-        <p className="mt-2 inline-flex items-center gap-1 text-slate-600 dark:text-slate-300">
-          <Building2 size={16} /> {job.company?.name}
-        </p>
+          <div className="relative">
+            <button
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft size={16} /> Back to jobs
+            </button>
 
-        <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-300">
-          <span className="inline-flex items-center gap-1"><MapPin size={15} /> {job.location}</span>
-          <span className="badge capitalize">{job.type}</span>
-          <span className="badge">{job.category}</span>
-          <span className="inline-flex items-center gap-1"><Wallet size={15} /> {job.salaryRange}</span>
-        </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className="rounded-full border border-sky-300/20 bg-sky-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
+                {formatJobType(job.type)}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200">
+                {job.category}
+              </span>
+            </div>
 
-        <p className="mt-5 text-slate-700 dark:text-slate-200">{job.description}</p>
+            <h1 className="mt-4 max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+              {job.title}
+            </h1>
+            <p className="mt-3 inline-flex items-center gap-2 text-base text-slate-300">
+              <Building2 size={16} /> {job.company?.name}
+            </p>
 
-        <div className="mt-5 flex flex-wrap gap-2">
-          {(job.requiredSkills || []).map((skill) => (
-            <span className="badge" key={skill}>{skill}</span>
-          ))}
-        </div>
-
-        {message ? (
-          <p className="mt-4 rounded-xl border border-sky-400/40 bg-sky-500/10 px-3 py-2 text-sm text-sky-700 dark:text-sky-300">
-            {message}
-          </p>
-        ) : null}
-
-        {isUser ? (
-          <div className="mt-5 flex flex-wrap gap-2">
-            <button className="btn-secondary" onClick={onSave}>{saved ? "Saved" : "Save Job"}</button>
-            <button className="btn-primary" onClick={onApply}>Apply Now</button>
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-300">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={15} /> {job.location}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Wallet size={15} /> {job.salaryRange || "Compensation shared during hiring"}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Sparkles size={15} /> Posted {formatRelativeTime(job.createdAt)}
+              </span>
+            </div>
           </div>
-        ) : null}
-      </section>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.5fr_0.95fr]">
+          <div className="glass p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700/70 dark:text-sky-300/70">
+              Role overview
+            </p>
+            <p className="mt-4 text-base leading-8 text-slate-700 dark:text-slate-200">
+              {job.description}
+            </p>
+
+            <div className="mt-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700/70 dark:text-sky-300/70">
+                Key skills
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(job.requiredSkills || []).map((skill) => (
+                  <span className="badge" key={skill}>
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <aside className="space-y-4">
+            <div className="glass p-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700/70 dark:text-sky-300/70">
+                Role snapshot
+              </p>
+              <div className="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-300">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Company</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">{job.company?.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Location</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">{job.location}</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Job type</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">
+                    {formatJobType(job.type)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Compensation</p>
+                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">
+                    {job.salaryRange || "Compensation shared during hiring"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {message ? (
+              <p className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700 dark:border-sky-900 dark:bg-sky-950/20 dark:text-sky-300">
+                {message}
+              </p>
+            ) : null}
+
+            {isUser ? (
+              <div className="glass p-5">
+                <div className="flex flex-wrap gap-2">
+                  <button className="btn-secondary" onClick={onSave}>
+                    {saved ? "Saved" : "Save job"}
+                  </button>
+                  <button className="btn-primary" onClick={onApply}>
+                    Apply now
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </aside>
+        </section>
+      </div>
     </PageTransition>
   );
 };

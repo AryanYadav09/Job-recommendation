@@ -5,21 +5,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: "#0d1321",
-        mist: "#f7f9fc",
-        accent: "#0ea5e9",
-        accent2: "#22c55e",
-        slateglass: "rgba(11, 18, 32, 0.62)"
+        ink: "#081121",
+        mist: "#f7fbff",
+        accent: "#2563eb",
+        accent2: "#60a5fa",
+        slateglass: "rgba(7, 17, 33, 0.72)"
       },
       boxShadow: {
-        glow: "0 10px 40px rgba(14, 165, 233, 0.35)"
+        glow: "0 22px 70px rgba(37, 99, 235, 0.28)",
+        card: "0 20px 60px rgba(15, 23, 42, 0.08)",
+        lifted: "0 28px 80px rgba(15, 23, 42, 0.16)"
       },
       backgroundImage: {
-        "mesh-light": "radial-gradient(circle at 15% 20%, rgba(14,165,233,0.15), transparent 35%), radial-gradient(circle at 80% 0%, rgba(34,197,94,0.16), transparent 25%), linear-gradient(120deg, #f8fafc 0%, #eef2ff 40%, #f5f9ff 100%)",
-        "mesh-dark": "radial-gradient(circle at 10% 15%, rgba(14,165,233,0.25), transparent 35%), radial-gradient(circle at 78% 8%, rgba(34,197,94,0.2), transparent 28%), linear-gradient(120deg, #020617 0%, #0f172a 52%, #0a192f 100%)"
+        "mesh-light": "radial-gradient(circle at 12% 18%, rgba(147,197,253,0.28), transparent 30%), radial-gradient(circle at 86% 10%, rgba(96,165,250,0.2), transparent 24%), linear-gradient(180deg, #ffffff 0%, #f8fbff 42%, #f1f7ff 100%)",
+        "mesh-dark": "radial-gradient(circle at 10% 18%, rgba(59,130,246,0.3), transparent 30%), radial-gradient(circle at 82% 12%, rgba(125,211,252,0.18), transparent 24%), linear-gradient(180deg, #020617 0%, #071226 44%, #0b1730 100%)"
       },
       fontFamily: {
-        display: ["Poppins", "sans-serif"],
+        display: ["Space Grotesk", "sans-serif"],
         body: ["Manrope", "sans-serif"]
       }
     }

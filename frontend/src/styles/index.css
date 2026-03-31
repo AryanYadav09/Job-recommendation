@@ -6,6 +6,10 @@
   color-scheme: light;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -14,6 +18,20 @@ body {
   margin: 0;
   font-family: "Manrope", sans-serif;
   min-height: 100vh;
+  background: #f7fbff;
+  color: #0f172a;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.18);
+  color: #081121;
 }
 
 @keyframes page-fade-in {
@@ -34,31 +52,31 @@ body {
 }
 
 .glass {
-  @apply rounded-2xl border border-white/35 bg-white/70 backdrop-blur-xl;
+  @apply rounded-[28px] border border-sky-100/90 bg-white/90 shadow-card backdrop-blur-xl;
 }
 
 .dark .glass {
-  @apply border-slate-700/60 bg-slateglass;
+  @apply border-slate-800/70 bg-slateglass shadow-none;
 }
 
 .section-title {
-  @apply font-display text-xl font-semibold tracking-tight;
+  @apply font-display text-[1.65rem] font-bold tracking-tight text-slate-950 dark:text-white;
 }
 
 .input {
-  @apply w-full rounded-xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/25;
+  @apply w-full rounded-2xl border border-slate-200/90 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 focus:border-accent focus:ring-4 focus:ring-accent/20;
 }
 
 .dark .input {
-  @apply border-slate-700 bg-slate-900/70 text-slate-100;
+  @apply border-slate-700 bg-slate-900/70 text-slate-100 placeholder:text-slate-500;
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-accent to-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 active:scale-95;
+  @apply inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-accent to-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-200 hover:-translate-y-0.5 hover:opacity-95 active:translate-y-0;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white/70 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95;
+  @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:border-sky-200 hover:bg-sky-50 active:translate-y-0;
 }
 
 .dark .btn-secondary {
@@ -66,9 +84,46 @@ body {
 }
 
 .badge {
-  @apply rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600;
+  @apply rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700;
 }
 
 .dark .badge {
   @apply bg-slate-800 text-slate-300;
+}
+
+.btn-icon {
+  @apply inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition duration-200 hover:border-sky-200 hover:bg-sky-50 hover:text-accent;
+}
+
+.dark .btn-icon {
+  @apply border-slate-700 bg-slate-900/70 text-slate-200 hover:bg-slate-800;
+}
+
+.input-shell {
+  @apply flex items-center rounded-2xl border border-slate-200/90 bg-white shadow-sm transition duration-200 focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/20;
+}
+
+.dark .input-shell {
+  @apply border-slate-700 bg-slate-900/70;
+}
+
+.input-icon {
+  @apply ml-4 mr-3 shrink-0 text-slate-400;
+}
+
+.input-field {
+  @apply w-full min-w-0 bg-transparent py-3 pr-4 text-sm text-slate-800 outline-none placeholder:text-slate-400;
+}
+
+.dark .input-field {
+  @apply text-slate-100 placeholder:text-slate-500;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
