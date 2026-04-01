@@ -1,4 +1,4 @@
-﻿import dotenv from "dotenv";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { connectDB } from "../config/db.js";
 import User from "../models/User.js";
@@ -6,6 +6,7 @@ import Company from "../models/Company.js";
 import Job from "../models/Job.js";
 import UserAction from "../models/UserAction.js";
 import Application from "../models/Application.js";
+import { clearAppCollections } from "./resetDatabase.js";
 
 dotenv.config();
 
@@ -146,16 +147,42 @@ const templates = [
   }
 ];
 
+const verificationFields = {
+  verificationStatus: "VERIFIED",
+  verificationSubmittedAt: new Date(),
+  verificationReviewedAt: new Date(),
+  verificationNotes: "Seeded demo company",
+  verificationAnalysis: {
+    analysisStatus: "COMPLETED",
+    extractor: "seed-data",
+    analyzedAt: new Date(),
+    extractedTextPreview: "Seeded demo verification data.",
+    extractedTextLength: 28,
+    authenticityScore: 100,
+    recommendation: "HIGH_CONFIDENCE",
+    matchedSignals: ["Seeded verified company"],
+    riskFlags: [],
+    extractedRegistrationNumbers: [],
+    registryValidation: {
+      provider: "",
+      status: "SKIPPED",
+      checkedAt: null,
+      message: "Seed data",
+      matchedName: false,
+      matchedCompanyNumber: false,
+      jurisdictionCode: "",
+      companyNumber: "",
+      companyStatus: "",
+      registryUrl: "",
+      source: ""
+    },
+    errorMessage: ""
+  }
+};
+
 const seed = async () => {
   await connectDB();
-
-  await Promise.all([
-    Application.deleteMany({}),
-    UserAction.deleteMany({}),
-    Job.deleteMany({}),
-    Company.deleteMany({}),
-    User.deleteMany({})
-  ]);
+  await clearAppCollections();
 
   const admin = await User.create({
     name: "Admin Root",
@@ -207,7 +234,10 @@ const seed = async () => {
     website: "https://nexalabs.example",
     location: "San Francisco, CA",
     industry: "Software",
-    size: "51-200"
+    size: "51-200",
+    businessEmail: companyUserA.email,
+    registrationNumber: "NEXA-001",
+    ...verificationFields
   });
 
   const companyB = await Company.create({
@@ -217,7 +247,10 @@ const seed = async () => {
     website: "https://orbitsystems.example",
     location: "New York, NY",
     industry: "Cloud Infrastructure",
-    size: "201-500"
+    size: "201-500",
+    businessEmail: companyUserB.email,
+    registrationNumber: "ORBIT-001",
+    ...verificationFields
   });
 
   const companyC = await Company.create({
@@ -227,7 +260,10 @@ const seed = async () => {
     website: "https://vertexdynamics.example",
     location: "Seattle, WA",
     industry: "Enterprise Software",
-    size: "501-1000"
+    size: "501-1000",
+    businessEmail: companyUserC.email,
+    registrationNumber: "VERTEX-001",
+    ...verificationFields
   });
 
   companyUserA.company = companyA._id;
@@ -344,7 +380,6 @@ const seed = async () => {
     });
   });
 
-  // Add 20 additional jobs for recommendation system testing
   const additionalTestJobs = [
     {
       title: "Senior ML Engineer",
