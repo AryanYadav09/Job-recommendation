@@ -8,6 +8,7 @@ import {
   MapPin
 } from "lucide-react";
 import { formatJobType, formatRelativeTime, getInitials } from "../utils/format";
+import CompanyVerificationBadge from "./CompanyVerificationBadge";
 
 const JobCard = ({
   job,
@@ -38,9 +39,12 @@ const JobCard = ({
             <h3 className="mt-1 font-display text-lg font-bold leading-snug text-slate-950 dark:text-white">
               {job.title}
             </h3>
-            <p className="mt-1 inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
-              <Building2 size={13} /> {companyName}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+                <Building2 size={13} /> {companyName}
+              </p>
+              <CompanyVerificationBadge status={job.company?.verificationStatus} />
+            </div>
           </div>
         </div>
         <span className="shrink-0 rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">

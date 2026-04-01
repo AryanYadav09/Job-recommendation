@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BriefcaseBusiness, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -29,25 +29,35 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setUnverifiedEmail("");
+    setResendMessage("");
+
     try {
-      await login(form);
+      await login({
+        email: form.email.trim().toLowerCase(),
+        password: form.password
+      });
     } catch (err) {
-      const msg = err.response?.data?.message || "Unable to login";
+      const msg = err.response?.data?.message || "Unable to sign in";
       const code = err.response?.data?.code;
+
       setError(msg);
-      if (code === "EMAIL_UNVERIFIED") {
-        setUnverifiedEmail(form.email);
-      }
+      setUnverifiedEmail(code === "EMAIL_UNVERIFIED" ? form.email.trim().toLowerCase() : "");
     } finally {
       setLoading(false);
     }
   };
 
   const handleResend = async () => {
+    if (!unverifiedEmail) return;
+
     setResendLoading(true);
     setResendMessage("");
+
     try {
-      const { data } = await api.post("/auth/resend-verification", { email: unverifiedEmail });
+      const { data } = await api.post("/auth/resend-verification", {
+        email: unverifiedEmail
+      });
       setResendMessage(data.message);
     } catch {
       setResendMessage("Failed to resend. Try again later.");
@@ -65,31 +75,31 @@ const LoginPage = () => {
         <p className="font-display text-xl font-semibold">JobPulse</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">Smart job recommendations</p>
       </div>
-      <form
-        onSubmit={onSubmit}
-        className="glass w-full max-w-md p-7"
-      >
+
+      <form onSubmit={onSubmit} className="glass w-full max-w-md p-7">
         <h1 className="font-display text-2xl">Welcome back</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Login to continue personalized job discovery.
+          Sign in to continue personalized job discovery.
         </p>
 
         <div className="mt-5 space-y-3">
           <input
             className="input"
             type="email"
+            autoComplete="email"
             placeholder="Email"
             required
             value={form.email}
-            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           />
           <input
             className="input"
             type="password"
+            autoComplete="current-password"
             placeholder="Password"
             required
             value={form.password}
-            onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
           />
         </div>
 
@@ -99,10 +109,12 @@ const LoginPage = () => {
             {unverifiedEmail ? (
               <div className="mt-3 rounded-xl border border-sky-400/30 bg-sky-50/60 p-3 dark:bg-sky-900/20">
                 <p className="inline-flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
-                  <Mail size={14} /> Gmail not verified yet
+                  <Mail size={14} /> Email not verified yet
                 </p>
                 {resendMessage ? (
-                  <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">{resendMessage}</p>
+                  <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+                    {resendMessage}
+                  </p>
                 ) : null}
                 <button
                   type="button"

@@ -103,12 +103,16 @@ frontend/
 
 3. Company Features
 - Company profile management
+- Certificate upload with OCR/document analysis
+- Authenticity scoring based on document/profile/registry matches
+- Optional external registry validation via OpenCorporates
 - Post, edit, delete jobs
 - View company dashboard counters
 - View applicants per job
 
 4. Admin Features
 - View all users, companies, jobs
+- Review company verification submissions with OCR and registry results
 - Delete users and jobs
 
 ## Recommendation Engine
@@ -153,6 +157,10 @@ MONGO_URI=mongodb://127.0.0.1:27017/smart_job_reco
 JWT_SECRET=replace-with-a-strong-secret
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
+OCR_LANGUAGE=eng
+TESSERACT_LANG_PATH=
+COMPANY_REGISTRY_PROVIDER=
+OPENCORPORATES_API_TOKEN=
 ```
 
 ### Frontend (`frontend/.env`)

@@ -34,24 +34,33 @@ const SignupPage = () => {
   }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    setForm((prev) => ({ ...prev, role: initialRole }));
+    setForm((prev) => ({
+      ...prev,
+      role: initialRole,
+      companyName: initialRole === "COMPANY" ? prev.companyName : ""
+    }));
   }, [initialRole]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setResendMessage("");
 
     try {
       const payload = {
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
         password: form.password,
         role: form.role
       };
-      if (form.role === "COMPANY") payload.companyName = form.companyName;
+
+      if (form.role === "COMPANY") {
+        payload.companyName = form.companyName.trim();
+      }
+
       await register(payload);
-      setRegisteredEmail(form.email);
+      setRegisteredEmail(payload.email);
     } catch (err) {
       setError(err.response?.data?.message || "Unable to sign up");
     } finally {
@@ -60,9 +69,15 @@ const SignupPage = () => {
   };
 
   const handleResend = async () => {
+    if (!registeredEmail) return;
+
     setResendLoading(true);
+    setResendMessage("");
+
     try {
-      const { data } = await api.post("/auth/resend-verification", { email: registeredEmail });
+      const { data } = await api.post("/auth/resend-verification", {
+        email: registeredEmail
+      });
       setResendMessage(data.message);
     } catch {
       setResendMessage("Failed to resend. Please try again.");
@@ -80,7 +95,7 @@ const SignupPage = () => {
               <Mail size={36} className="text-accent" />
             </div>
           </div>
-          <h1 className="font-display text-2xl font-semibold">Check your Gmail!</h1>
+          <h1 className="font-display text-2xl font-semibold">Check your inbox</h1>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
             We sent a verification link to{" "}
             <span className="font-semibold text-accent">{registeredEmail}</span>.
@@ -121,6 +136,7 @@ const SignupPage = () => {
         <p className="font-display text-xl font-semibold">JobPulse</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">Smart job recommendations</p>
       </div>
+
       <form onSubmit={onSubmit} className="glass w-full max-w-lg p-7">
         <h1 className="font-display text-2xl">Create account</h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -133,32 +149,35 @@ const SignupPage = () => {
           <input
             className="input md:col-span-2"
             type="text"
+            autoComplete="name"
             placeholder="Full name"
             required
             value={form.name}
-            onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
           />
           <input
             className="input"
             type="email"
+            autoComplete="email"
             placeholder="Email"
             required
             value={form.email}
-            onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           />
           <input
             className="input"
             type="password"
+            autoComplete="new-password"
             placeholder="Password"
             required
             value={form.password}
-            onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
           />
 
           <select
             className="input md:col-span-2"
             value={form.role}
-            onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
+            onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
           >
             <option value="USER">User</option>
             <option value="COMPANY">Company</option>
@@ -170,7 +189,7 @@ const SignupPage = () => {
               placeholder="Company name"
               required
               value={form.companyName}
-              onChange={(e) => setForm((p) => ({ ...p, companyName: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, companyName: e.target.value }))}
             />
           ) : null}
         </div>
@@ -178,7 +197,11 @@ const SignupPage = () => {
         {error ? <p className="mt-3 text-sm text-rose-500">{error}</p> : null}
 
         <button className="btn-primary mt-5 w-full" disabled={loading}>
-          {loading ? "Creating account..." : form.role === "COMPANY" ? "Create employer account" : "Sign up"}
+          {loading
+            ? "Creating account..."
+            : form.role === "COMPANY"
+              ? "Create employer account"
+              : "Sign up"}
         </button>
 
         <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-300">

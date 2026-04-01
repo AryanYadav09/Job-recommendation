@@ -75,7 +75,7 @@ export const getJobs = asyncHandler(async (req, res) => {
   }
 
   const jobs = await Job.find(query)
-    .populate("company", "name logoUrl location industry")
+    .populate("company", "name logoUrl location industry verificationStatus")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -84,7 +84,10 @@ export const getJobs = asyncHandler(async (req, res) => {
 
 export const getJobById = asyncHandler(async (req, res) => {
   const job = await Job.findById(req.params.jobId)
-    .populate("company", "name logoUrl location industry description website")
+    .populate(
+      "company",
+      "name logoUrl location industry description website verificationStatus"
+    )
     .lean();
 
   if (!job) {
@@ -189,7 +192,7 @@ export const getSavedJobs = asyncHandler(async (req, res) => {
     .select("savedJobs")
     .populate({
       path: "savedJobs",
-      populate: { path: "company", select: "name logoUrl location" }
+      populate: { path: "company", select: "name logoUrl location verificationStatus" }
     })
     .lean();
 

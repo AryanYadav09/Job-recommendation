@@ -14,7 +14,10 @@ const userResponse = async (userId) => {
 export const register = asyncHandler(async (req, res) => {
   handleValidation(req);
 
-  const { name, email, password, role = "USER", companyName } = req.body;
+  const normalizedEmail = String(req.body.email || "").trim().toLowerCase();
+  const normalizedName = String(req.body.name || "").trim();
+  const normalizedCompanyName = String(req.body.companyName || "").trim();
+  const { password, role = "USER" } = req.body;
 
   if (role === "ADMIN") {
     const error = new Error("Admin signup is disabled");
@@ -22,14 +25,14 @@ export const register = asyncHandler(async (req, res) => {
     throw error;
   }
 
-  const existing = await User.findOne({ email });
+  const existing = await User.findOne({ email: normalizedEmail });
   if (existing) {
     const error = new Error("Email is already registered");
     error.statusCode = 409;
     throw error;
   }
 
-  if (role === "COMPANY" && !companyName) {
+  if (role === "COMPANY" && !normalizedCompanyName) {
     const error = new Error("companyName is required for COMPANY role");
     error.statusCode = 400;
     throw error;
@@ -39,8 +42,8 @@ export const register = asyncHandler(async (req, res) => {
   const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const user = await User.create({
-    name,
-    email,
+    name: normalizedName,
+    email: normalizedEmail,
     password,
     role,
     onboardingCompleted: role !== "USER",
@@ -52,23 +55,24 @@ export const register = asyncHandler(async (req, res) => {
   if (role === "COMPANY") {
     const company = await Company.create({
       owner: user._id,
-      name: companyName
+      name: normalizedCompanyName
     });
     user.company = company._id;
     await user.save();
   }
 
-  await sendVerificationEmail(email, verificationToken);
+  await sendVerificationEmail(normalizedEmail, verificationToken);
 
   res.status(201).json({
-    message: "Account created! A verification link has been sent to your Gmail. Please check your inbox."
+    message: "Account created. A verification link has been sent to your email address."
   });
 });
 
 export const login = asyncHandler(async (req, res) => {
   handleValidation(req);
 
-  const { email, password } = req.body;
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const { password } = req.body;
   const user = await User.findOne({ email });
 
   if (!user || !(await user.matchPassword(password))) {
@@ -78,7 +82,7 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   if (!user.isEmailVerified) {
-    const error = new Error("Please verify your Gmail address before logging in.");
+    const error = new Error("Please verify your email address before logging in.");
     error.statusCode = 403;
     error.code = "EMAIL_UNVERIFIED";
     throw error;
@@ -115,20 +119,22 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   const safeUser = await userResponse(user._id);
 
   res.json({
-    message: "Gmail verified successfully! Welcome to JobPulse.",
+    message: "Email verified successfully. Welcome to JobPulse.",
     token: generateToken(user._id, user.role),
     user: safeUser
   });
 });
 
 export const resendVerification = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  const email = String(req.body.email || "").trim().toLowerCase();
 
   const user = await User.findOne({ email });
 
   if (!user || user.isEmailVerified) {
     // Intentionally vague to avoid email enumeration
-    return res.json({ message: "If that Gmail is registered and unverified, a new link has been sent." });
+    return res.json({
+      message: "If that email is registered and unverified, a new link has been sent."
+    });
   }
 
   const verificationToken = crypto.randomBytes(32).toString("hex");
@@ -138,11 +144,10 @@ export const resendVerification = asyncHandler(async (req, res) => {
 
   await sendVerificationEmail(email, verificationToken);
 
-  res.json({ message: "Verification email resent. Please check your Gmail." });
+  res.json({ message: "Verification email resent. Please check your inbox." });
 });
 
 export const getMe = asyncHandler(async (req, res) => {
   const user = await userResponse(req.user._id);
   res.json(user);
 });
-

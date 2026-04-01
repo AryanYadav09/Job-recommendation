@@ -1,4 +1,4 @@
-﻿import {
+import {
   createContext,
   useCallback,
   useContext,
@@ -9,25 +9,27 @@
 import api from "../services/api";
 
 const AuthContext = createContext(null);
+const TOKEN_KEY = "smart_jobs_token";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("smart_jobs_token");
-
-  const setSession = (tokenValue, userValue) => {
-    localStorage.setItem("smart_jobs_token", tokenValue);
+  const setSession = useCallback((tokenValue, userValue) => {
+    localStorage.setItem(TOKEN_KEY, tokenValue);
+    setToken(tokenValue);
     setUser(userValue);
-  };
+  }, []);
 
-  const clearSession = () => {
-    localStorage.removeItem("smart_jobs_token");
+  const clearSession = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY);
+    setToken(null);
     setUser(null);
-  };
+  }, []);
 
   const fetchMe = useCallback(async () => {
-    if (!localStorage.getItem("smart_jobs_token")) {
+    if (!token) {
       setLoading(false);
       return;
     }
@@ -40,29 +42,36 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearSession, token]);
 
   useEffect(() => {
     fetchMe();
   }, [fetchMe]);
 
-  const login = async (payload) => {
-    const { data } = await api.post("/auth/login", payload);
-    setSession(data.token, data.user);
-    return data;
-  };
+  const login = useCallback(
+    async (payload) => {
+      const { data } = await api.post("/auth/login", payload);
+      setSession(data.token, data.user);
+      return data;
+    },
+    [setSession]
+  );
 
-  const register = async (payload) => {
+  const register = useCallback(async (payload) => {
     const { data } = await api.post("/auth/register", payload);
-    // No auto-login — user must verify their Gmail first
     return data;
-  };
+  }, []);
 
-  const loginWithData = (tokenValue, userData) => {
-    setSession(tokenValue, userData);
-  };
+  const loginWithData = useCallback(
+    (tokenValue, userData) => {
+      setSession(tokenValue, userData);
+    },
+    [setSession]
+  );
 
-  const logout = () => clearSession();
+  const logout = useCallback(() => {
+    clearSession();
+  }, [clearSession]);
 
   const value = useMemo(
     () => ({
@@ -76,7 +85,7 @@ export const AuthProvider = ({ children }) => {
       refreshUser: fetchMe,
       isAuthenticated: Boolean(user)
     }),
-    [user, token, loading, fetchMe]
+    [user, token, loading, login, register, logout, loginWithData, fetchMe]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

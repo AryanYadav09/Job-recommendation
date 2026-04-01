@@ -3,6 +3,7 @@ import { body } from "express-validator";
 import {
   getCompanyProfile,
   updateCompanyProfile,
+  uploadCompanyCertificate,
   createJob,
   updateJob,
   deleteJob,
@@ -10,6 +11,7 @@ import {
   getJobApplicants,
   getDashboard
 } from "../controllers/companyController.js";
+import { companyCertificateUpload } from "../middleware/uploadMiddleware.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = Router();
@@ -26,9 +28,17 @@ router.put(
     body("location").optional().isString(),
     body("industry").optional().isString(),
     body("size").optional().isString(),
+    body("businessEmail").optional().isEmail().withMessage("Valid business email is required"),
+    body("registrationNumber").optional().isString(),
+    body("registrationJurisdiction").optional().isString(),
     body("logoUrl").optional().isString()
   ],
   updateCompanyProfile
+);
+router.post(
+  "/verification/certificate",
+  companyCertificateUpload.single("certificate"),
+  uploadCompanyCertificate
 );
 
 router.get("/jobs", getCompanyJobs);

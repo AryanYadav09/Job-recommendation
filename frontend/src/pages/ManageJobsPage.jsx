@@ -1,7 +1,9 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
+import CompanyVerificationBadge from "../components/CompanyVerificationBadge";
 import { parseTagsInput, formatDate } from "../utils/format";
 
 const initialForm = {
@@ -18,6 +20,7 @@ const initialForm = {
 };
 
 const ManageJobsPage = () => {
+  const { user } = useAuth();
   const [form, setForm] = useState(initialForm);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +113,16 @@ const ManageJobsPage = () => {
     <PageTransition>
       <section className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
         <form className="glass p-6" onSubmit={handleSubmit}>
-          <h1 className="section-title">{editingId ? "Edit Job" : "Post New Job"}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h1 className="section-title">{editingId ? "Edit Job" : "Post New Job"}</h1>
+            <CompanyVerificationBadge status={user?.company?.verificationStatus} showAll />
+          </div>
+
+          {user?.company?.verificationStatus !== "VERIFIED" ? (
+            <p className="mt-3 rounded-xl border border-amber-300/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300">
+              Complete company verification in the Company Profile page before creating new jobs.
+            </p>
+          ) : null}
 
           <div className="mt-4 space-y-3">
             <input
@@ -118,42 +130,44 @@ const ManageJobsPage = () => {
               placeholder="Job title"
               required
               value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
             />
             <textarea
               className="input min-h-28"
               placeholder="Description"
               required
               value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
             />
             <input
               className="input"
               placeholder="Required skills (comma separated)"
               required
               value={form.requiredSkills}
-              onChange={(e) => setForm((p) => ({ ...p, requiredSkills: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, requiredSkills: e.target.value }))
+              }
             />
             <input
               className="input"
               placeholder="Category"
               required
               value={form.category}
-              onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
             />
             <input
               className="input"
               placeholder="Location"
               required
               value={form.location}
-              onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
             />
 
             <div className="grid gap-3 md:grid-cols-2">
               <select
                 className="input"
                 value={form.type}
-                onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
               >
                 <option value="remote">Remote</option>
                 <option value="full-time">Full Time</option>
@@ -164,7 +178,7 @@ const ManageJobsPage = () => {
               <select
                 className="input"
                 value={form.status}
-                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
               >
                 <option value="active">Active</option>
                 <option value="closed">Closed</option>
@@ -175,7 +189,7 @@ const ManageJobsPage = () => {
               className="input"
               placeholder="Salary range"
               value={form.salaryRange}
-              onChange={(e) => setForm((p) => ({ ...p, salaryRange: e.target.value }))}
+              onChange={(e) => setForm((prev) => ({ ...prev, salaryRange: e.target.value }))}
             />
             <div className="grid gap-3 md:grid-cols-2">
               <input
@@ -184,7 +198,7 @@ const ManageJobsPage = () => {
                 min="0"
                 placeholder="Salary min"
                 value={form.salaryMin}
-                onChange={(e) => setForm((p) => ({ ...p, salaryMin: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, salaryMin: e.target.value }))}
               />
               <input
                 className="input"
@@ -192,7 +206,7 @@ const ManageJobsPage = () => {
                 min="0"
                 placeholder="Salary max"
                 value={form.salaryMax}
-                onChange={(e) => setForm((p) => ({ ...p, salaryMax: e.target.value }))}
+                onChange={(e) => setForm((prev) => ({ ...prev, salaryMax: e.target.value }))}
               />
             </div>
           </div>
@@ -264,7 +278,9 @@ const ManageJobsPage = () => {
                       className="rounded-xl border border-slate-200/70 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60"
                     >
                       <p className="font-semibold">{app.user?.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{app.user?.email}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {app.user?.email}
+                      </p>
                       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         Applied on {formatDate(app.createdAt)}
                       </p>

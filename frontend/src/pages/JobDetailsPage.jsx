@@ -5,6 +5,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import PageTransition from "../components/PageTransition";
+import CompanyVerificationBadge from "../components/CompanyVerificationBadge";
 import { formatJobType, formatRelativeTime } from "../utils/format";
 
 const JobDetailsPage = () => {
@@ -92,9 +93,12 @@ const JobDetailsPage = () => {
             <h1 className="mt-4 max-w-4xl font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl">
               {job.title}
             </h1>
-            <p className="mt-3 inline-flex items-center gap-2 text-base text-slate-300">
-              <Building2 size={16} /> {job.company?.name}
-            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-base text-slate-300">
+              <p className="inline-flex items-center gap-2">
+                <Building2 size={16} /> {job.company?.name}
+              </p>
+              <CompanyVerificationBadge status={job.company?.verificationStatus} />
+            </div>
 
             <div className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-slate-300">
               <span className="inline-flex items-center gap-1.5">
@@ -141,7 +145,10 @@ const JobDetailsPage = () => {
               <div className="mt-4 space-y-4 text-sm text-slate-600 dark:text-slate-300">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Company</p>
-                  <p className="mt-1 font-semibold text-slate-900 dark:text-white">{job.company?.name}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <p className="font-semibold text-slate-900 dark:text-white">{job.company?.name}</p>
+                    <CompanyVerificationBadge status={job.company?.verificationStatus} />
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Location</p>

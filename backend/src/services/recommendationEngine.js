@@ -184,7 +184,9 @@ export const generateRecommendations = async (userId, limit = 10) => {
   }
 
   const [jobs, userActions] = await Promise.all([
-    Job.find({ status: "active" }).populate("company", "name logoUrl").lean(),
+    Job.find({ status: "active" })
+      .populate("company", "name logoUrl verificationStatus")
+      .lean(),
     UserAction.find({ user: userId }).populate("job").lean()
   ]);
 

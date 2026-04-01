@@ -1,5 +1,6 @@
 import { ArrowRight, Briefcase, Building2, MapPin, Wallet } from "lucide-react";
 import { getInitials } from "../utils/format";
+import CompanyVerificationBadge from "./CompanyVerificationBadge";
 
 const HomeJobCard = ({ job, onDetails }) => {
   const companyName = job.company?.name || "Unknown Company";
@@ -14,9 +15,12 @@ const HomeJobCard = ({ job, onDetails }) => {
           <h3 className="mt-4 font-display text-xl font-bold leading-snug text-slate-950 dark:text-white">
             {job.title}
           </h3>
-          <p className="mt-1 inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
-            <Building2 size={13} /> {companyName}
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <p className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
+              <Building2 size={13} /> {companyName}
+            </p>
+            <CompanyVerificationBadge status={job.company?.verificationStatus} />
+          </div>
         </div>
 
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 font-display text-lg font-bold text-white shadow-glow">

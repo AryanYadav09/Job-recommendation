@@ -44,3 +44,20 @@ export const getInitials = (value = "") =>
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
     .join("");
+
+export const toAbsoluteAssetUrl = (value = "") => {
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  const origin = apiBaseUrl.replace(/\/api\/?$/, "");
+  return `${origin}${value.startsWith("/") ? value : `/${value}`}`;
+};
+
+export const formatEnumLabel = (value = "") =>
+  String(value)
+    .toLowerCase()
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");

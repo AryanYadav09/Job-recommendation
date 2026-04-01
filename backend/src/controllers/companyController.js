@@ -1,10 +1,30 @@
-﻿import Company from "../models/Company.js";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+import Company from "../models/Company.js";
 import Job from "../models/Job.js";
 import Application from "../models/Application.js";
 import UserAction from "../models/UserAction.js";
 import User from "../models/User.js";
+import {
+  analyzeCompanyCertificate,
+  createPendingVerificationAnalysis
+} from "../services/documentVerificationService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { handleValidation } from "../utils/handleValidation.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadsRootDir = path.resolve(__dirname, "../../uploads");
+
+const verificationIdentityFields = new Set([
+  "name",
+  "website",
+  "businessEmail",
+  "registrationNumber",
+  "registrationJurisdiction"
+]);
 
 const normalizeSalary = (value) => {
   if (value === null || value === undefined || value === "") return null;
@@ -19,6 +39,47 @@ const normalizeJobPayload = (payload) => ({
   salaryMax:
     payload.salaryMax !== undefined ? normalizeSalary(payload.salaryMax) : payload.salaryMax
 });
+
+const toStoredCertificatePath = (fileName) => `/uploads/company-certificates/${fileName}`;
+
+const resolveStoredCertificatePath = (relativePath) => {
+  if (!relativePath) return "";
+  const normalizedPath = relativePath.replace(/^\/+/, "").replace(/^uploads[\\/]/, "");
+  return path.resolve(uploadsRootDir, normalizedPath);
+};
+
+const removeCertificateFile = async (certificate) => {
+  if (!certificate?.path) return;
+
+  try {
+    await fs.unlink(resolveStoredCertificatePath(certificate.path));
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      console.error("Failed to remove company certificate", error);
+    }
+  }
+};
+
+const resetVerificationState = (company) => {
+  company.verificationStatus = company.certificate?.path ? "PENDING" : "UNVERIFIED";
+  company.verificationNotes = "";
+  company.verificationSubmittedAt = company.certificate?.path ? new Date() : null;
+  company.verificationReviewedAt = null;
+  company.verificationReviewedBy = null;
+  company.verificationAnalysis = createPendingVerificationAnalysis();
+};
+
+const refreshVerificationAnalysis = async (company) => {
+  if (!company.certificate?.path) {
+    return createPendingVerificationAnalysis();
+  }
+
+  return analyzeCompanyCertificate({
+    company,
+    absolutePath: resolveStoredCertificatePath(company.certificate.path),
+    mimeType: company.certificate.mimeType
+  });
+};
 
 const ensureCompany = async (user) => {
   let company = await Company.findOne({ owner: user._id });
@@ -52,24 +113,102 @@ export const updateCompanyProfile = asyncHandler(async (req, res) => {
     "location",
     "industry",
     "size",
+    "businessEmail",
+    "registrationNumber",
+    "registrationJurisdiction",
     "logoUrl"
   ];
 
+  let requiresVerificationRefresh = false;
+
   allowedFields.forEach((field) => {
     if (req.body[field] !== undefined) {
+      if (verificationIdentityFields.has(field) && company[field] !== req.body[field]) {
+        requiresVerificationRefresh = true;
+      }
       company[field] = req.body[field];
     }
   });
+
+  if (requiresVerificationRefresh) {
+    resetVerificationState(company);
+    company.verificationAnalysis = await refreshVerificationAnalysis(company);
+  }
 
   await company.save();
 
   res.json({ message: "Company profile updated", company });
 });
 
+export const uploadCompanyCertificate = asyncHandler(async (req, res) => {
+  const company = await ensureCompany(req.user);
+
+  if (!req.file) {
+    const error = new Error("Certificate file is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!company.businessEmail || !company.registrationNumber) {
+    await fs.unlink(req.file.path).catch(() => null);
+    const error = new Error("Save business email and registration number before uploading");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const fileBuffer = await fs.readFile(req.file.path);
+  const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex");
+
+  const duplicateCertificate = await Company.findOne({
+    _id: { $ne: company._id },
+    "certificate.hash": fileHash
+  })
+    .select("_id")
+    .lean();
+
+  if (duplicateCertificate) {
+    await fs.unlink(req.file.path).catch(() => null);
+    const error = new Error("This certificate file is already being used by another company");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  await removeCertificateFile(company.certificate);
+
+  company.certificate = {
+    originalName: req.file.originalname,
+    storedName: req.file.filename,
+    mimeType: req.file.mimetype,
+    size: req.file.size,
+    path: toStoredCertificatePath(req.file.filename),
+    hash: fileHash,
+    uploadedAt: new Date()
+  };
+  company.verificationStatus = "PENDING";
+  company.verificationNotes = "";
+  company.verificationSubmittedAt = new Date();
+  company.verificationReviewedAt = null;
+  company.verificationReviewedBy = null;
+  company.verificationAnalysis = await refreshVerificationAnalysis(company);
+
+  await company.save();
+
+  res.status(201).json({
+    message: "Certificate uploaded. Verification is pending admin review.",
+    company
+  });
+});
+
 export const createJob = asyncHandler(async (req, res) => {
   handleValidation(req);
 
   const company = await ensureCompany(req.user);
+  if (company.verificationStatus !== "VERIFIED") {
+    const error = new Error("Company verification is required before posting new jobs");
+    error.statusCode = 403;
+    throw error;
+  }
+
   const payload = normalizeJobPayload(req.body);
 
   const job = await Job.create({
@@ -187,6 +326,8 @@ export const getDashboard = asyncHandler(async (req, res) => {
       closedJobs: jobs.filter((job) => job.status === "closed").length,
       totalApplications: applicationsCount
     },
+    verificationStatus: company.verificationStatus,
+    verificationAnalysis: company.verificationAnalysis,
     viewsByJob,
     recentApplications
   });
