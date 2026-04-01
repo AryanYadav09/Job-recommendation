@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserOnboardingGuard from "./components/UserOnboardingGuard";
 import AppShell from "./components/AppShell";
@@ -12,6 +12,7 @@ import JobFeedPage from "./pages/JobFeedPage";
 import JobDetailsPage from "./pages/JobDetailsPage";
 import ProfilePage from "./pages/ProfilePage";
 import CompanyDashboardPage from "./pages/CompanyDashboardPage";
+import CompanyApplicantsPage from "./pages/CompanyApplicantsPage";
 import CompanyProfilePage from "./pages/CompanyProfilePage";
 import ManageJobsPage from "./pages/ManageJobsPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
@@ -43,12 +44,14 @@ const App = () => {
 
           <Route element={<ProtectedRoute roles={["COMPANY"]} />}>
             <Route path="/company/dashboard" element={<CompanyDashboardPage />} />
+            <Route path="/company/applicants" element={<CompanyApplicantsPage />} />
             <Route path="/company/profile" element={<CompanyProfilePage />} />
             <Route path="/company/jobs" element={<ManageJobsPage />} />
           </Route>
 
           <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
-            <Route path="/admin" element={<AdminPanelPage />} />
+            <Route path="/admin" element={<Navigate to="/admin/verification" replace />} />
+            <Route path="/admin/:section" element={<AdminPanelPage />} />
           </Route>
         </Route>
       </Route>

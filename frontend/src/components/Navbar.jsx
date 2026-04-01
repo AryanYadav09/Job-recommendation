@@ -4,6 +4,7 @@ import {
   BriefcaseBusiness,
   Building2,
   Compass,
+  FileUser,
   Moon,
   Search,
   Settings2,
@@ -122,6 +123,11 @@ const Navbar = () => {
                     <Building2 size={15} /> Dashboard
                   </span>
                 </NavLink>
+                <NavLink to="/company/applicants" className={linkStyle}>
+                  <span className="inline-flex items-center gap-1">
+                    <FileUser size={15} /> Applicants
+                  </span>
+                </NavLink>
                 <NavLink to="/company/jobs" className={linkStyle}>
                   Listings
                 </NavLink>
@@ -132,7 +138,7 @@ const Navbar = () => {
             )}
 
             {user.role === "ADMIN" && (
-              <NavLink to="/admin" className={linkStyle}>
+              <NavLink to="/admin/verification" className={linkStyle}>
                 <span className="inline-flex items-center gap-1">
                   <Shield size={15} /> Admin
                 </span>

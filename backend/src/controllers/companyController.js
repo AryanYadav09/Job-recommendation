@@ -276,22 +276,67 @@ export const getCompanyJobs = asyncHandler(async (req, res) => {
   res.json(jobs);
 });
 
-export const getJobApplicants = asyncHandler(async (req, res) => {
+export const getCompanyApplications = asyncHandler(async (req, res) => {
   const company = await ensureCompany(req.user);
 
-  const job = await Job.findOne({ _id: req.params.jobId, company: company._id }).lean();
-  if (!job) {
-    const error = new Error("Job not found or not owned by this company");
+  const applications = await Application.find({ company: company._id })
+    .populate("job", "title category location type status")
+    .populate("user", "name email skills experienceLevel location desiredRoles")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const statusCounts = applications.reduce(
+    (acc, application) => {
+      const status = application.status || "submitted";
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    },
+    {
+      submitted: 0,
+      reviewing: 0,
+      shortlisted: 0,
+      rejected: 0,
+      hired: 0
+    }
+  );
+
+  res.json({
+    applications,
+    counters: {
+      total: applications.length,
+      ...statusCounts
+    }
+  });
+});
+
+export const updateApplicationStatus = asyncHandler(async (req, res) => {
+  handleValidation(req);
+
+  const company = await ensureCompany(req.user);
+
+  const application = await Application.findOne({
+    _id: req.params.applicationId,
+    company: company._id
+  });
+
+  if (!application) {
+    const error = new Error("Application not found for this company");
     error.statusCode = 404;
     throw error;
   }
 
-  const applicants = await Application.find({ job: req.params.jobId })
-    .populate("user", "name email skills experienceLevel location")
-    .sort({ createdAt: -1 })
+  application.status = req.body.status;
+  await application.save();
+
+  const populatedApplication = await Application.findById(application._id)
+    .populate("job", "title category location type status")
+    .populate("user", "name email skills experienceLevel location desiredRoles")
     .lean();
 
-  res.json({ job, applicants });
+  res.json({
+    message: "Application status updated",
+    application: populatedApplication
+  });
 });
 
 export const getDashboard = asyncHandler(async (req, res) => {

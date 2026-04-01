@@ -4,9 +4,10 @@ import { BriefcaseBusiness, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { homeByUser } from "../utils/roleHome";
 import api from "../services/api";
+import Loader from "../components/Loader";
 
 const SignupPage = () => {
-  const { register, isAuthenticated, user } = useAuth();
+  const { register, isAuthenticated, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialRole = useMemo(
@@ -85,6 +86,10 @@ const SignupPage = () => {
       setResendLoading(false);
     }
   };
+
+  if (authLoading) {
+    return <Loader fullscreen />;
+  }
 
   if (registeredEmail) {
     return (

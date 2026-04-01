@@ -35,6 +35,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
+      setLoading(true);
       const { data } = await api.get("/auth/me");
       setUser(data);
     } catch (_error) {
@@ -50,9 +51,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(
     async (payload) => {
-      const { data } = await api.post("/auth/login", payload);
-      setSession(data.token, data.user);
-      return data;
+      setLoading(true);
+
+      try {
+        const { data } = await api.post("/auth/login", payload);
+        setSession(data.token, data.user);
+        return data;
+      } catch (error) {
+        setLoading(false);
+        throw error;
+      }
     },
     [setSession]
   );
@@ -64,6 +72,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithData = useCallback(
     (tokenValue, userData) => {
+      setLoading(true);
       setSession(tokenValue, userData);
     },
     [setSession]
@@ -71,6 +80,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     clearSession();
+    setLoading(false);
   }, [clearSession]);
 
   const value = useMemo(

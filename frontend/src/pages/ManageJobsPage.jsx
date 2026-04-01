@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
 import CompanyVerificationBadge from "../components/CompanyVerificationBadge";
-import { parseTagsInput, formatDate } from "../utils/format";
+import { parseTagsInput } from "../utils/format";
 
 const initialForm = {
   title: "",
@@ -25,7 +26,6 @@ const ManageJobsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState("");
-  const [applicantData, setApplicantData] = useState(null);
   const [message, setMessage] = useState("");
 
   const loadJobs = async () => {
@@ -95,15 +95,6 @@ const ManageJobsPage = () => {
       loadJobs().catch(() => null);
     } catch (error) {
       setMessage(error.response?.data?.message || "Unable to delete");
-    }
-  };
-
-  const onViewApplicants = async (jobId) => {
-    try {
-      const { data } = await api.get(`/company/jobs/${jobId}/applicants`);
-      setApplicantData(data);
-    } catch (error) {
-      setMessage(error.response?.data?.message || "Unable to load applicants");
     }
   };
 
@@ -231,7 +222,17 @@ const ManageJobsPage = () => {
 
         <div className="space-y-5">
           <div className="glass p-5">
-            <h2 className="section-title">Your Job Listings</h2>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="section-title">Your Job Listings</h2>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+                  Manage openings here. Review candidates from the dedicated Applicants page.
+                </p>
+              </div>
+              <Link className="btn-secondary" to="/company/applicants">
+                Open applicants
+              </Link>
+            </div>
             <div className="mt-4 space-y-3">
               {jobs.length ? (
                 jobs.map((job) => (
@@ -254,9 +255,9 @@ const ManageJobsPage = () => {
                         <button className="btn-secondary" onClick={() => onDelete(job._id)}>
                           Delete
                         </button>
-                        <button className="btn-primary" onClick={() => onViewApplicants(job._id)}>
+                        <Link className="btn-primary" to="/company/applicants">
                           Applicants
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </article>
@@ -266,33 +267,6 @@ const ManageJobsPage = () => {
               )}
             </div>
           </div>
-
-          {applicantData ? (
-            <div className="glass p-5">
-              <h3 className="section-title">Applicants: {applicantData.job.title}</h3>
-              <div className="mt-4 space-y-3">
-                {applicantData.applicants.length ? (
-                  applicantData.applicants.map((app) => (
-                    <article
-                      key={app._id}
-                      className="rounded-xl border border-slate-200/70 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60"
-                    >
-                      <p className="font-semibold">{app.user?.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {app.user?.email}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Applied on {formatDate(app.createdAt)}
-                      </p>
-                      <span className="badge mt-2 capitalize">{app.status}</span>
-                    </article>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-600 dark:text-slate-300">No applicants yet.</p>
-                )}
-              </div>
-            </div>
-          ) : null}
         </div>
       </section>
     </PageTransition>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BriefcaseBusiness, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { BriefcaseBusiness, Loader2, XCircle } from "lucide-react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { homeByUser } from "../utils/roleHome";
@@ -8,7 +8,7 @@ import { homeByUser } from "../utils/roleHome";
 const VerifyEmailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { loginWithData } = useAuth();
+  const { loginWithData, loading, user } = useAuth();
   const [status, setStatus] = useState("verifying");
   const [message, setMessage] = useState("");
 
@@ -26,11 +26,8 @@ const VerifyEmailPage = () => {
       .get(`/auth/verify-email/${token}`)
       .then(({ data }) => {
         loginWithData(data.token, data.user);
-        setStatus("success");
+        setStatus("redirecting");
         setMessage(data.message);
-        redirectTimer = window.setTimeout(() => {
-          navigate(homeByUser(data.user), { replace: true });
-        }, 2000);
       })
       .catch((err) => {
         setStatus("error");
@@ -43,6 +40,12 @@ const VerifyEmailPage = () => {
       if (redirectTimer) window.clearTimeout(redirectTimer);
     };
   }, [loginWithData, navigate, searchParams]);
+
+  useEffect(() => {
+    if (status !== "redirecting" || loading || !user) return;
+
+    navigate(homeByUser(user), { replace: true });
+  }, [loading, navigate, status, user]);
 
   return (
     <div className="app-bg grid min-h-screen place-content-center px-4 py-10">
@@ -63,12 +66,12 @@ const VerifyEmailPage = () => {
           </>
         ) : null}
 
-        {status === "success" ? (
+        {status === "redirecting" ? (
           <>
-            <CheckCircle2 size={48} className="mx-auto text-emerald-500" />
-            <h1 className="mt-4 font-display text-2xl font-semibold">Email verified</h1>
+            <Loader2 size={40} className="mx-auto animate-spin text-accent" />
+            <h1 className="mt-4 font-display text-2xl font-semibold">Signing you in</h1>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{message}</p>
-            <p className="mt-3 text-xs text-slate-400">Redirecting you to your dashboard...</p>
+            <p className="mt-3 text-xs text-slate-400">Preparing your dashboard...</p>
           </>
         ) : null}
 

@@ -4,9 +4,10 @@ import { BriefcaseBusiness, Mail } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { homeByUser } from "../utils/roleHome";
 import api from "../services/api";
+import Loader from "../components/Loader";
 
 const LoginPage = () => {
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -65,6 +66,10 @@ const LoginPage = () => {
       setResendLoading(false);
     }
   };
+
+  if (authLoading) {
+    return <Loader fullscreen />;
+  }
 
   return (
     <div className="app-bg grid min-h-screen place-content-center px-4 py-10">

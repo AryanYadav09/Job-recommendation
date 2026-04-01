@@ -8,7 +8,8 @@ import {
   updateJob,
   deleteJob,
   getCompanyJobs,
-  getJobApplicants,
+  getCompanyApplications,
+  updateApplicationStatus,
   getDashboard
 } from "../controllers/companyController.js";
 import { companyCertificateUpload } from "../middleware/uploadMiddleware.js";
@@ -42,6 +43,16 @@ router.post(
 );
 
 router.get("/jobs", getCompanyJobs);
+router.get("/applications", getCompanyApplications);
+router.patch(
+  "/applications/:applicationId",
+  [
+    body("status")
+      .isIn(["submitted", "reviewing", "shortlisted", "rejected", "hired"])
+      .withMessage("invalid application status")
+  ],
+  updateApplicationStatus
+);
 router.post(
   "/jobs",
   [
@@ -103,6 +114,5 @@ router.put(
 );
 
 router.delete("/jobs/:jobId", deleteJob);
-router.get("/jobs/:jobId/applicants", getJobApplicants);
 
 export default router;
