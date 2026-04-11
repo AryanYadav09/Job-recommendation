@@ -1,16 +1,12 @@
-import fs from "fs";
 import path from "path";
 import multer from "multer";
-import { fileURLToPath } from "url";
+import { ensureDirectory, uploadsRootDir } from "../utils/uploadsPath.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadsRootDir = path.resolve(__dirname, "../../uploads");
 const companyCertificatesDir = path.join(uploadsRootDir, "company-certificates");
 const chatMediaDir = path.join(uploadsRootDir, "chat-media");
 
 [companyCertificatesDir, chatMediaDir].forEach((dir) => {
-  fs.mkdirSync(dir, { recursive: true });
+  ensureDirectory(dir);
 });
 
 const createStorage = (destination) =>

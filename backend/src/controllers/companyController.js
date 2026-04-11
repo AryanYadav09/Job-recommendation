@@ -1,7 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { fileURLToPath } from "url";
 import Company from "../models/Company.js";
 import Job from "../models/Job.js";
 import Application from "../models/Application.js";
@@ -13,10 +12,7 @@ import {
 } from "../services/documentVerificationService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { handleValidation } from "../utils/handleValidation.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const uploadsRootDir = path.resolve(__dirname, "../../uploads");
+import { uploadsRootDir } from "../utils/uploadsPath.js";
 
 const verificationIdentityFields = new Set([
   "name",

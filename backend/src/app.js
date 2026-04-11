@@ -14,6 +14,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+import { ensureDirectory, uploadsRootDir } from "./utils/uploadsPath.js";
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ const app = express();
 connectDB();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadsDir = path.resolve(__dirname, "../uploads");
+const uploadsDir = ensureDirectory(uploadsRootDir);
 
 app.use(helmet());
 app.use(
