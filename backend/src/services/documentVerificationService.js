@@ -1,6 +1,4 @@
 import fs from "fs/promises";
-import { PDFParse } from "pdf-parse";
-import { createWorker } from "tesseract.js";
 import { validateCompanyRegistry } from "./registryValidationService.js";
 import {
   extractEmailDomain,
@@ -8,6 +6,35 @@ import {
   normalizeRegistrationNumber,
   textIncludesNormalized
 } from "../utils/companyVerification.js";
+
+let pdfParseModulePromise;
+let tesseractModulePromise;
+
+const loadPdfParse = async () => {
+  if (!pdfParseModulePromise) {
+    pdfParseModulePromise = import("pdf-parse");
+  }
+
+  const module = await pdfParseModulePromise;
+  if (typeof module.PDFParse !== "function") {
+    throw new Error("PDF parsing runtime is not available in this environment.");
+  }
+
+  return module.PDFParse;
+};
+
+const loadCreateWorker = async () => {
+  if (!tesseractModulePromise) {
+    tesseractModulePromise = import("tesseract.js");
+  }
+
+  const module = await tesseractModulePromise;
+  if (typeof module.createWorker !== "function") {
+    throw new Error("OCR runtime is not available in this environment.");
+  }
+
+  return module.createWorker;
+};
 
 export const createPendingVerificationAnalysis = () => ({
   analysisStatus: "PENDING",
@@ -60,6 +87,7 @@ const getWorkerOptions = () => {
 const getOcrLanguage = () => process.env.OCR_LANGUAGE || "eng";
 
 const withOcrWorker = async (work) => {
+  const createWorker = await loadCreateWorker();
   const worker = await createWorker(getOcrLanguage(), 1, getWorkerOptions());
 
   try {
@@ -82,6 +110,7 @@ const performOcr = async (worker, imageLike) => {
 };
 
 const extractTextFromPdf = async (buffer) => {
+  const PDFParse = await loadPdfParse();
   const parser = new PDFParse({ data: buffer });
 
   try {
