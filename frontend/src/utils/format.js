@@ -54,6 +54,19 @@ export const toAbsoluteAssetUrl = (value = "") => {
   return `${origin}${value.startsWith("/") ? value : `/${value}`}`;
 };
 
+export const buildProfilePath = (role = "", id = "") => {
+  const normalizedRole = String(role || "").toLowerCase();
+  if (!id || !["user", "company"].includes(normalizedRole)) return "";
+  return `/profiles/${normalizedRole}/${id}`;
+};
+
+export const formatFileSize = (value = 0) => {
+  const size = Number(value) || 0;
+  if (size < 1024) return `${size} B`;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
 export const formatEnumLabel = (value = "") =>
   String(value)
     .toLowerCase()

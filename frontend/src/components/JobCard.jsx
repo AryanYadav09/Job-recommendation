@@ -2,13 +2,13 @@ import {
   Bookmark,
   BookmarkCheck,
   Briefcase,
-  Building2,
   CheckCircle2,
   DollarSign,
   MapPin
 } from "lucide-react";
-import { formatJobType, formatRelativeTime, getInitials } from "../utils/format";
+import { formatJobType, formatRelativeTime } from "../utils/format";
 import CompanyVerificationBadge from "./CompanyVerificationBadge";
+import ProfileIdentityLink from "./ProfileIdentityLink";
 
 const JobCard = ({
   job,
@@ -17,6 +17,7 @@ const JobCard = ({
   onApply,
   onDetails,
   saved,
+  applied = false,
   disableActions = false
 }) => {
   const companyName = job.company?.name || "Unknown Company";
@@ -29,9 +30,6 @@ const JobCard = ({
     <article className="group flex h-full flex-col rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-card transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-lifted dark:border-slate-800 dark:bg-slate-950/70 dark:hover:border-sky-900">
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 font-display text-lg font-bold text-white shadow-glow">
-            {getInitials(companyName)}
-          </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700/70 dark:text-sky-300/70">
               {job.category}
@@ -40,9 +38,14 @@ const JobCard = ({
               {job.title}
             </h3>
             <div className="mt-1 flex flex-wrap items-center gap-2">
-              <p className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
-                <Building2 size={13} /> {companyName}
-              </p>
+              <ProfileIdentityLink
+                role="COMPANY"
+                id={job.company?._id}
+                name={companyName}
+                subtitle={job.company?.industry || job.location}
+                avatarUrl={job.company?.logoUrl}
+                size="sm"
+              />
               <CompanyVerificationBadge status={job.company?.verificationStatus} />
             </div>
           </div>
@@ -106,9 +109,13 @@ const JobCard = ({
                 >
                   {saved ? <BookmarkCheck size={16} className="text-accent" /> : <Bookmark size={16} />}
                 </button>
-                <button className="btn-primary" onClick={() => onApply(job._id)}>
+                <button
+                  className={applied ? "btn-secondary" : "btn-primary"}
+                  onClick={() => onApply(job._id)}
+                  disabled={applied}
+                >
                   <span className="inline-flex items-center gap-1.5">
-                    <CheckCircle2 size={14} /> Apply
+                    <CheckCircle2 size={14} /> {applied ? "Applied" : "Apply"}
                   </span>
                 </button>
               </>

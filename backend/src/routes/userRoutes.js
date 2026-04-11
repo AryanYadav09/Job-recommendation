@@ -5,7 +5,8 @@ import {
   getProfile,
   updateProfile,
   completeOnboarding,
-  getActivity
+  getActivity,
+  getPublicUserProfile
 } from "../controllers/userController.js";
 
 const router = Router();
@@ -44,6 +45,8 @@ const profileValidation = [
     .isFloat({ min: 0 })
     .withMessage("expectedSalaryMax must be a positive number"),
   body("location").optional().isString().withMessage("location must be text"),
+  body("experienceSummary").optional().isString().withMessage("experienceSummary must be text"),
+  body("resumeUrl").optional().isString().withMessage("resumeUrl must be text"),
   body("expectedSalaryMax").custom((value, { req }) => {
     if (value === null || value === undefined || value === "") return true;
     if (req.body.expectedSalaryMin === null || req.body.expectedSalaryMin === undefined) {
@@ -56,6 +59,12 @@ const profileValidation = [
   })
 ];
 
+router.get(
+  "/:userId/public-profile",
+  protect,
+  authorize("USER", "COMPANY", "ADMIN"),
+  getPublicUserProfile
+);
 router.get("/profile", protect, getProfile);
 router.get("/activity", protect, authorize("USER"), getActivity);
 

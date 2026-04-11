@@ -38,6 +38,7 @@ const PublicJobsPage = () => {
   const [filters, setFilters] = useState(() => getFiltersFromParams(searchParams));
   const [jobs, setJobs] = useState([]);
   const [savedJobs, setSavedJobs] = useState(new Set());
+  const [appliedJobs, setAppliedJobs] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -76,12 +77,18 @@ const PublicJobsPage = () => {
     setLoading(true);
 
     const requests = [api.get("/jobs", { params: queryParams })];
-    if (isCandidate) requests.push(api.get("/users/profile"));
+    if (isCandidate) {
+      requests.push(api.get("/users/profile"));
+      requests.push(api.get("/users/activity"));
+    }
 
-    const [jobsRes, profileRes] = await Promise.all(requests);
+    const [jobsRes, profileRes, activityRes] = await Promise.all(requests);
     setJobs(jobsRes.data);
     setSavedJobs(
       new Set((profileRes?.data?.savedJobs || []).map((job) => String(job._id)))
+    );
+    setAppliedJobs(
+      new Set((activityRes?.data?.applications || []).map((application) => String(application.job?._id)))
     );
     setLoading(false);
   }, [isCandidate, queryParams]);
@@ -129,6 +136,7 @@ const PublicJobsPage = () => {
 
     try {
       await api.post(`/jobs/${jobId}/apply`, {});
+      setAppliedJobs((prev) => new Set(prev).add(String(jobId)));
       setMessage("Application submitted successfully");
     } catch (error) {
       setMessage(error.response?.data?.message || "Unable to apply");
@@ -326,6 +334,7 @@ const PublicJobsPage = () => {
                     onApply={handleApply}
                     onDetails={handleDetails}
                     saved={savedJobs.has(String(job._id))}
+                    applied={appliedJobs.has(String(job._id))}
                     disableActions={!isCandidate}
                   />
                 ))}

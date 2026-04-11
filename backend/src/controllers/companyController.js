@@ -101,6 +101,42 @@ export const getCompanyProfile = asyncHandler(async (req, res) => {
   res.json(company);
 });
 
+export const getPublicCompanyProfile = asyncHandler(async (req, res) => {
+  const company = await Company.findById(req.params.companyId).lean();
+
+  if (!company) {
+    const error = new Error("Company not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const jobs = await Job.find({
+    company: company._id,
+    status: "active"
+  })
+    .select("title category location type salaryRange createdAt")
+    .sort({ createdAt: -1 })
+    .limit(12)
+    .lean();
+
+  res.json({
+    profileType: "COMPANY",
+    profile: {
+      _id: String(company._id),
+      name: company.name,
+      description: company.description || "",
+      website: company.website || "",
+      businessEmail: company.businessEmail || "",
+      location: company.location || "",
+      industry: company.industry || "",
+      size: company.size || "",
+      logoUrl: company.logoUrl || "",
+      verificationStatus: company.verificationStatus,
+      jobs
+    }
+  });
+});
+
 export const updateCompanyProfile = asyncHandler(async (req, res) => {
   handleValidation(req);
 

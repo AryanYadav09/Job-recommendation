@@ -10,7 +10,7 @@ export const errorHandler = (err, _req, res, _next) => {
   res.status(statusCode).json({
     message:
       err.name === "MulterError" && err.code === "LIMIT_FILE_SIZE"
-        ? "File size must be 5MB or less"
+        ? "File size exceeds the allowed limit"
         : err.message || "Server error",
     code: err.code || undefined,
     stack: process.env.NODE_ENV === "production" ? undefined : err.stack

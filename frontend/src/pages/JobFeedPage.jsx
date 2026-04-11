@@ -38,6 +38,7 @@ const JobFeedPage = () => {
   const [jobs, setJobs] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [savedJobs, setSavedJobs] = useState(new Set());
+  const [appliedJobs, setAppliedJobs] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [sortBy, setSortBy] = useState("newest");
@@ -59,13 +60,17 @@ const JobFeedPage = () => {
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
-    const [jobsRes, profileRes] = await Promise.all([
+    const [jobsRes, profileRes, activityRes] = await Promise.all([
       api.get("/jobs", { params: queryParams }),
-      api.get("/users/profile")
+      api.get("/users/profile"),
+      api.get("/users/activity")
     ]);
 
     setJobs(jobsRes.data);
     setSavedJobs(new Set((profileRes.data.savedJobs || []).map((job) => String(job._id))));
+    setAppliedJobs(
+      new Set((activityRes.data.applications || []).map((application) => String(application.job?._id)))
+    );
     setLoading(false);
   }, [queryParams]);
 
@@ -115,6 +120,7 @@ const JobFeedPage = () => {
   const handleApply = async (jobId) => {
     try {
       await api.post(`/jobs/${jobId}/apply`, {});
+      setAppliedJobs((prev) => new Set(prev).add(String(jobId)));
       setMessage("Application submitted successfully");
       fetchRecommendations().catch(() => null);
     } catch (error) {
@@ -408,6 +414,7 @@ const JobFeedPage = () => {
                 onApply={handleApply}
                 onDetails={handleDetails}
                 saved={savedJobs.has(String(item.job._id))}
+                applied={appliedJobs.has(String(item.job._id))}
               />
             ))}
           </div>
@@ -493,6 +500,7 @@ const JobFeedPage = () => {
                     onApply={handleApply}
                     onDetails={handleDetails}
                     saved={savedJobs.has(String(job._id))}
+                    applied={appliedJobs.has(String(job._id))}
                   />
                 ))}
               </div>

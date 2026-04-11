@@ -17,6 +17,7 @@ import { useAuth } from "../context/AuthContext";
 import Loader from "../components/Loader";
 import PageTransition from "../components/PageTransition";
 import HomeJobCard from "../components/HomeJobCard";
+import ProfileIdentityLink from "../components/ProfileIdentityLink";
 import { homeByUser } from "../utils/roleHome";
 import { getInitials } from "../utils/format";
 
@@ -97,7 +98,9 @@ const HomePage = () => {
       const name = job.company?.name;
       if (!name || map.has(name)) return;
       map.set(name, {
+        _id: job.company?._id,
         name,
+        logoUrl: job.company?.logoUrl || "",
         totalJobs: 0
       });
     });
@@ -346,15 +349,13 @@ const HomePage = () => {
                 key={company.name}
                 className="rounded-[24px] border border-sky-100 bg-sky-50/60 px-4 py-4"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 font-display text-sm font-bold text-white shadow-glow">
-                    {getInitials(company.name)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-950">{company.name}</p>
-                    <p className="text-xs text-slate-500">{company.totalJobs} jobs live</p>
-                  </div>
-                </div>
+                <ProfileIdentityLink
+                  role="COMPANY"
+                  id={company._id}
+                  name={company.name}
+                  subtitle={`${company.totalJobs} jobs live`}
+                  avatarUrl={company.logoUrl}
+                />
               </article>
             ))}
           </div>

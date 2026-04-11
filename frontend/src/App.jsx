@@ -16,6 +16,7 @@ import CompanyApplicantsPage from "./pages/CompanyApplicantsPage";
 import CompanyProfilePage from "./pages/CompanyProfilePage";
 import ManageJobsPage from "./pages/ManageJobsPage";
 import AdminPanelPage from "./pages/AdminPanelPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
@@ -31,8 +32,17 @@ const App = () => {
         <Route path="/" element={<HomePage />} />
         <Route path="/jobs" element={<PublicJobsPage />} />
         <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
+        <Route
+          path="/profiles/company/:profileId"
+          element={<PublicProfilePage profileType="company" />}
+        />
 
         <Route element={<ProtectedRoute />}>
+          <Route
+            path="/profiles/user/:profileId"
+            element={<PublicProfilePage profileType="user" />}
+          />
+
           <Route element={<ProtectedRoute roles={["USER"]} />}>
             <Route path="/onboarding" element={<OnboardingPage />} />
 

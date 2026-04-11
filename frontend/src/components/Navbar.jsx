@@ -5,6 +5,7 @@ import {
   Building2,
   Compass,
   FileUser,
+  MessageCircleMore,
   Moon,
   Search,
   Settings2,
@@ -14,6 +15,7 @@ import {
   UserCircle2
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useMessaging } from "../context/MessagingContext";
 import { useTheme } from "../context/ThemeContext";
 
 const linkStyle = ({ isActive }) =>
@@ -29,11 +31,14 @@ const plainLinkStyle =
 const Navbar = () => {
   const { user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
+  const { messagingEnabled, openInbox, totalUnreadCount } = useMessaging();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
 
   const setupPending = user?.role === "USER" && !user.onboardingCompleted;
   const showSearchBar = useMemo(() => !user || user.role === "USER", [user]);
+  const profilePath =
+    user?.role === "COMPANY" ? "/company/profile" : user?.role === "USER" ? "/profile" : "/";
 
   const handleLogout = () => {
     logout();
@@ -162,19 +167,37 @@ const Navbar = () => {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-2">
+          {messagingEnabled ? (
+            <button
+              onClick={openInbox}
+              className="relative rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:border-sky-200 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-800"
+              aria-label="Open inbox"
+            >
+              <MessageCircleMore size={18} />
+              {totalUnreadCount ? (
+                <span className="absolute -right-1.5 -top-1.5 inline-flex min-w-[1.35rem] items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  {totalUnreadCount > 10 ? "10+" : totalUnreadCount}
+                </span>
+              ) : null}
+            </button>
+          ) : null}
+
           <button
             onClick={toggleTheme}
             className="rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:border-sky-200 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-200 dark:hover:bg-slate-800"
             aria-label="Toggle theme"
           >
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
           {user ? (
             <>
-              <span className="hidden text-sm font-semibold text-slate-600 dark:text-slate-300 md:inline-flex md:items-center md:gap-1">
+              <Link
+                to={profilePath}
+                className="hidden text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white md:inline-flex md:items-center md:gap-1"
+              >
                 <UserCircle2 size={16} /> {user.name}
-              </span>
+              </Link>
               <button className="btn-secondary" onClick={handleLogout}>
                 Logout
               </button>

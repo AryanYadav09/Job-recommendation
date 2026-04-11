@@ -1,6 +1,6 @@
-import { ArrowRight, Briefcase, Building2, MapPin, Wallet } from "lucide-react";
-import { getInitials } from "../utils/format";
+import { ArrowRight, Briefcase, MapPin, Wallet } from "lucide-react";
 import CompanyVerificationBadge from "./CompanyVerificationBadge";
+import ProfileIdentityLink from "./ProfileIdentityLink";
 
 const HomeJobCard = ({ job, onDetails }) => {
   const companyName = job.company?.name || "Unknown Company";
@@ -16,16 +16,27 @@ const HomeJobCard = ({ job, onDetails }) => {
             {job.title}
           </h3>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <p className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400">
-              <Building2 size={13} /> {companyName}
-            </p>
+            <ProfileIdentityLink
+              role="COMPANY"
+              id={job.company?._id}
+              name={companyName}
+              subtitle={job.company?.industry || job.location}
+              avatarUrl={job.company?.logoUrl}
+              size="sm"
+            />
             <CompanyVerificationBadge status={job.company?.verificationStatus} />
           </div>
         </div>
 
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-accent2 font-display text-lg font-bold text-white shadow-glow">
-          {getInitials(companyName)}
-        </div>
+        <ProfileIdentityLink
+          role="COMPANY"
+          id={job.company?._id}
+          name={companyName}
+          avatarUrl={job.company?.logoUrl}
+          showSubtitle={false}
+          nameClassName="hidden"
+          className="shrink-0"
+        />
       </div>
 
       <div className="mt-5 space-y-3 border-t border-slate-100 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-300">

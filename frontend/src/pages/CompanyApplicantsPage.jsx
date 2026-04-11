@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { BriefcaseBusiness, Mail, MapPin, Sparkles, UserRound } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  Mail,
+  MapPin,
+  MessageCircleMore,
+  Sparkles,
+  UserRound
+} from "lucide-react";
 import api from "../services/api";
+import { useMessaging } from "../context/MessagingContext";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
+import ProfileIdentityLink from "../components/ProfileIdentityLink";
 import { formatDate, formatJobType } from "../utils/format";
 
 const statusOptions = ["all", "submitted", "reviewing", "shortlisted", "rejected", "hired"];
@@ -13,12 +22,14 @@ const statusButtonClass = (active) =>
     : "bg-white text-slate-700 hover:bg-sky-50 dark:bg-slate-950/60 dark:text-slate-200 dark:hover:bg-slate-800";
 
 const CompanyApplicantsPage = () => {
+  const { ensureConversation } = useMessaging();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [activeStatus, setActiveStatus] = useState("all");
   const [updatingId, setUpdatingId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [openingChatUserId, setOpeningChatUserId] = useState("");
 
   const loadApplications = async () => {
     try {
@@ -133,6 +144,21 @@ const CompanyApplicantsPage = () => {
     }
   };
 
+  const handleStartConversation = async (userId) => {
+    if (!userId) return;
+
+    setOpeningChatUserId(userId);
+
+    try {
+      await ensureConversation({ targetUserId: userId });
+      setMessage("");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Unable to open conversation");
+    } finally {
+      setOpeningChatUserId("");
+    }
+  };
+
   if (loading) return <Loader />;
   if (!data) return <div className="glass p-5">Unable to load applicants</div>;
 
@@ -204,17 +230,17 @@ const CompanyApplicantsPage = () => {
               </div>
 
               <div className="flex flex-wrap gap-2">
-              {statusOptions.map((status) => (
-                <button
-                  key={status}
-                  className={`rounded-full px-4 py-2 text-sm font-semibold transition ${statusButtonClass(
-                    activeStatus === status
-                  )}`}
-                  onClick={() => setActiveStatus(status)}
-                >
-                  {status === "all" ? "All" : status} ({statusCounts[status]})
-                </button>
-              ))}
+                {statusOptions.map((status) => (
+                  <button
+                    key={status}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${statusButtonClass(
+                      activeStatus === status
+                    )}`}
+                    onClick={() => setActiveStatus(status)}
+                  >
+                    {status === "all" ? "All" : status} ({statusCounts[status]})
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -235,9 +261,13 @@ const CompanyApplicantsPage = () => {
                   <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="font-display text-2xl font-bold text-slate-950 dark:text-white">
-                          {application.user?.name}
-                        </h3>
+                        <ProfileIdentityLink
+                          role="USER"
+                          id={application.user?._id}
+                          name={application.user?.name}
+                          subtitle={application.user?.location || application.user?.email}
+                          size="lg"
+                        />
                         <span className="badge capitalize">{application.status}</span>
                       </div>
 
@@ -249,8 +279,7 @@ const CompanyApplicantsPage = () => {
                           <MapPin size={14} /> {application.user?.location || "Location not set"}
                         </span>
                         <span className="inline-flex items-center gap-1.5">
-                          <BriefcaseBusiness size={14} />{" "}
-                          {application.job?.title || "Job removed"}
+                          <BriefcaseBusiness size={14} /> {application.job?.title || "Job removed"}
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                           <Sparkles size={14} /> {formatDate(application.createdAt)}
@@ -336,6 +365,18 @@ const CompanyApplicantsPage = () => {
                       <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
                         Move this applicant through the hiring pipeline.
                       </p>
+                      <button
+                        className="btn-primary mt-4 w-full"
+                        onClick={() => handleStartConversation(application.user?._id)}
+                        disabled={openingChatUserId === application.user?._id}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <MessageCircleMore size={15} />
+                          {openingChatUserId === application.user?._id
+                            ? "Opening chat..."
+                            : "Message applicant"}
+                        </span>
+                      </button>
                       <div className="mt-4 grid gap-2 sm:grid-cols-2">
                         {["reviewing", "shortlisted", "rejected", "hired"].map((status) => (
                           <button
@@ -344,9 +385,7 @@ const CompanyApplicantsPage = () => {
                             onClick={() => updateStatus(application._id, status)}
                             disabled={Boolean(updatingId)}
                           >
-                            {updatingId === `${application._id}-${status}`
-                              ? "Saving..."
-                              : status}
+                            {updatingId === `${application._id}-${status}` ? "Saving..." : status}
                           </button>
                         ))}
                       </div>

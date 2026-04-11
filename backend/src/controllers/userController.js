@@ -1,6 +1,7 @@
 ﻿import User from "../models/User.js";
 import UserAction from "../models/UserAction.js";
 import Application from "../models/Application.js";
+import Conversation from "../models/Conversation.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { handleValidation } from "../utils/handleValidation.js";
 
@@ -15,7 +16,9 @@ const PROFILE_FIELDS = [
   "preferredLocations",
   "expectedSalaryMin",
   "expectedSalaryMax",
-  "location"
+  "location",
+  "experienceSummary",
+  "resumeUrl"
 ];
 
 const ONBOARDING_FIELDS = [
@@ -128,5 +131,64 @@ export const getActivity = asyncHandler(async (req, res) => {
   res.json({
     counters: { views, saves, applies },
     applications
+  });
+});
+
+export const getPublicUserProfile = asyncHandler(async (req, res) => {
+  const targetUser = await User.findOne({
+    _id: req.params.userId,
+    role: "USER"
+  })
+    .select("name skills location experienceLevel experienceSummary resumeUrl desiredRoles preferredCategory")
+    .lean();
+
+  if (!targetUser) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const viewer = req.user;
+  const isSelf = String(viewer._id) === String(targetUser._id);
+  const isAdmin = viewer.role === "ADMIN";
+  let isAllowedCompanyViewer = false;
+
+  if (viewer.role === "COMPANY" && viewer.company) {
+    isAllowedCompanyViewer = Boolean(
+      await Application.exists({
+        user: targetUser._id,
+        company: viewer.company
+      })
+    );
+
+    if (!isAllowedCompanyViewer) {
+      isAllowedCompanyViewer = Boolean(
+        await Conversation.exists({
+          user: targetUser._id,
+          company: viewer.company
+        })
+      );
+    }
+  }
+
+  if (!isSelf && !isAdmin && !isAllowedCompanyViewer) {
+    const error = new Error("You do not have access to this profile");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  res.json({
+    profileType: "USER",
+    profile: {
+      _id: String(targetUser._id),
+      name: targetUser.name,
+      location: targetUser.location || "",
+      skills: targetUser.skills || [],
+      experienceLevel: targetUser.experienceLevel || "",
+      experienceSummary: targetUser.experienceSummary || "",
+      desiredRoles: targetUser.desiredRoles || [],
+      preferredCategory: targetUser.preferredCategory || "",
+      resumeUrl: targetUser.resumeUrl || ""
+    }
   });
 });

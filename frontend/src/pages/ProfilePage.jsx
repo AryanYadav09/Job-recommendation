@@ -1,16 +1,19 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Bookmark, BookmarkX, Briefcase, MapPin, MessageCircleMore } from "lucide-react";
 import api from "../services/api";
+import { useMessaging } from "../context/MessagingContext";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
+import ProfileIdentityLink from "../components/ProfileIdentityLink";
 import StatCard from "../components/StatCard";
 import { parseTagsInput, formatDate } from "../utils/format";
-import { Bookmark, BookmarkX, Briefcase, Building2, MapPin } from "lucide-react";
 
 const jobTypeOptions = ["remote", "full-time", "internship", "part-time", "hybrid"];
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const { ensureConversation } = useMessaging();
   const [form, setForm] = useState({
     name: "",
     skills: "",
@@ -22,7 +25,9 @@ const ProfilePage = () => {
     desiredJobTypes: ["remote"],
     expectedSalaryMin: "",
     expectedSalaryMax: "",
-    location: ""
+    location: "",
+    experienceSummary: "",
+    resumeUrl: ""
   });
   const [savedJobs, setSavedJobs] = useState([]);
   const [activity, setActivity] = useState({
@@ -31,6 +36,7 @@ const ProfilePage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [chattingCompanyId, setChattingCompanyId] = useState("");
 
   const fetchData = async () => {
     const [profileRes, activityRes] = await Promise.all([
@@ -51,7 +57,9 @@ const ProfilePage = () => {
       desiredJobTypes: profile.desiredJobTypes?.length ? profile.desiredJobTypes : ["remote"],
       expectedSalaryMin: profile.expectedSalaryMin || "",
       expectedSalaryMax: profile.expectedSalaryMax || "",
-      location: profile.location || ""
+      location: profile.location || "",
+      experienceSummary: profile.experienceSummary || "",
+      resumeUrl: profile.resumeUrl || ""
     });
     setActivity(activityRes.data);
     setLoading(false);
@@ -70,8 +78,8 @@ const ProfilePage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
       await api.put("/users/profile", {
         ...form,
@@ -92,9 +100,24 @@ const ProfilePage = () => {
   const handleUnsave = async (jobId) => {
     try {
       await api.post(`/jobs/${jobId}/save`);
-      setSavedJobs((prev) => prev.filter((j) => j._id !== jobId));
+      setSavedJobs((prev) => prev.filter((job) => job._id !== jobId));
     } catch {
       // silent
+    }
+  };
+
+  const handleMessageCompany = async (companyId) => {
+    if (!companyId) return;
+
+    setChattingCompanyId(companyId);
+
+    try {
+      await ensureConversation({ targetCompanyId: companyId });
+      setMessage("");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Unable to open conversation");
+    } finally {
+      setChattingCompanyId("");
     }
   };
 
@@ -114,24 +137,26 @@ const ProfilePage = () => {
               className="input md:col-span-2"
               placeholder="Name"
               value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
             />
             <input
               className="input md:col-span-2"
               placeholder="Skills (comma separated)"
               value={form.skills}
-              onChange={(e) => setForm((prev) => ({ ...prev, skills: e.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, skills: event.target.value }))}
             />
             <input
               className="input md:col-span-2"
               placeholder="Interests (comma separated)"
               value={form.interests}
-              onChange={(e) => setForm((prev) => ({ ...prev, interests: e.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, interests: event.target.value }))}
             />
             <select
               className="input"
               value={form.experienceLevel}
-              onChange={(e) => setForm((prev) => ({ ...prev, experienceLevel: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, experienceLevel: event.target.value }))
+              }
             >
               <option value="FRESHER">Fresher</option>
               <option value="JUNIOR">Junior</option>
@@ -142,19 +167,25 @@ const ProfilePage = () => {
               className="input"
               placeholder="Preferred category"
               value={form.preferredCategory}
-              onChange={(e) => setForm((prev) => ({ ...prev, preferredCategory: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, preferredCategory: event.target.value }))
+              }
             />
             <input
               className="input md:col-span-2"
               placeholder="Desired roles (comma separated)"
               value={form.desiredRoles}
-              onChange={(e) => setForm((prev) => ({ ...prev, desiredRoles: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, desiredRoles: event.target.value }))
+              }
             />
             <input
               className="input md:col-span-2"
               placeholder="Preferred locations (comma separated)"
               value={form.preferredLocations}
-              onChange={(e) => setForm((prev) => ({ ...prev, preferredLocations: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, preferredLocations: event.target.value }))
+              }
             />
             <input
               className="input"
@@ -162,7 +193,9 @@ const ProfilePage = () => {
               min="0"
               placeholder="Expected salary min"
               value={form.expectedSalaryMin}
-              onChange={(e) => setForm((prev) => ({ ...prev, expectedSalaryMin: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, expectedSalaryMin: event.target.value }))
+              }
             />
             <input
               className="input"
@@ -170,13 +203,29 @@ const ProfilePage = () => {
               min="0"
               placeholder="Expected salary max"
               value={form.expectedSalaryMax}
-              onChange={(e) => setForm((prev) => ({ ...prev, expectedSalaryMax: e.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, expectedSalaryMax: event.target.value }))
+              }
             />
             <input
               className="input md:col-span-2"
               placeholder="Current location"
               value={form.location}
-              onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))}
+            />
+            <textarea
+              className="input min-h-28 md:col-span-2"
+              placeholder="Experience summary"
+              value={form.experienceSummary}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, experienceSummary: event.target.value }))
+              }
+            />
+            <input
+              className="input md:col-span-2"
+              placeholder="Resume URL"
+              value={form.resumeUrl}
+              onChange={(event) => setForm((prev) => ({ ...prev, resumeUrl: event.target.value }))}
             />
           </div>
 
@@ -243,9 +292,16 @@ const ProfilePage = () => {
                         >
                           {job.title}
                         </p>
-                        <p className="mt-0.5 inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                          <Building2 size={11} /> {job.company?.name || "—"}
-                        </p>
+                        <div className="mt-1">
+                          <ProfileIdentityLink
+                            role="COMPANY"
+                            id={job.company?._id}
+                            name={job.company?.name || "Unknown company"}
+                            avatarUrl={job.company?.logoUrl}
+                            size="sm"
+                            showSubtitle={false}
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={() => handleUnsave(job._id)}
@@ -256,11 +312,17 @@ const ProfilePage = () => {
                       </button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
-                      <span className="inline-flex items-center gap-1"><MapPin size={11} /> {job.location}</span>
-                      <span className="inline-flex items-center gap-1"><Briefcase size={11} /> {job.category}</span>
-                      {job.salaryRange && job.salaryRange !== "Not disclosed" && (
-                        <span className="font-medium text-emerald-600 dark:text-emerald-400">{job.salaryRange}</span>
-                      )}
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin size={11} /> {job.location}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Briefcase size={11} /> {job.category}
+                      </span>
+                      {job.salaryRange && job.salaryRange !== "Not disclosed" ? (
+                        <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                          {job.salaryRange}
+                        </span>
+                      ) : null}
                     </div>
                     <span className="badge mt-2 capitalize">{job.type}</span>
                   </article>
@@ -280,11 +342,46 @@ const ProfilePage = () => {
                     className="rounded-xl border border-slate-200/70 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-900/60"
                     key={application._id}
                   >
-                    <p className="font-semibold">{application.job?.title}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {application.job?.company?.name} | {formatDate(application.createdAt)}
-                    </p>
-                    <span className="badge mt-2 capitalize">{application.status}</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold">{application.job?.title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {formatDate(application.createdAt)}
+                        </p>
+                        <div className="mt-1">
+                          <ProfileIdentityLink
+                            role="COMPANY"
+                            id={application.job?.company?._id}
+                            name={application.job?.company?.name || "Unknown company"}
+                            avatarUrl={application.job?.company?.logoUrl}
+                            size="sm"
+                            showSubtitle={false}
+                          />
+                        </div>
+                      </div>
+                      <span className="badge capitalize">{application.status}</span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        className="btn-secondary"
+                        onClick={() => navigate(`/jobs/${application.job?._id}`)}
+                      >
+                        View job
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => handleMessageCompany(application.job?.company?._id)}
+                        disabled={chattingCompanyId === application.job?.company?._id}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <MessageCircleMore size={15} />
+                          {chattingCompanyId === application.job?.company?._id
+                            ? "Opening..."
+                            : "Message company"}
+                        </span>
+                      </button>
+                    </div>
                   </article>
                 ))
               ) : (

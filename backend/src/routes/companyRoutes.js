@@ -2,6 +2,7 @@
 import { body } from "express-validator";
 import {
   getCompanyProfile,
+  getPublicCompanyProfile,
   updateCompanyProfile,
   uploadCompanyCertificate,
   createJob,
@@ -16,6 +17,8 @@ import { companyCertificateUpload } from "../middleware/uploadMiddleware.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = Router();
+
+router.get("/:companyId/public-profile", getPublicCompanyProfile);
 
 router.use(protect, authorize("COMPANY"));
 

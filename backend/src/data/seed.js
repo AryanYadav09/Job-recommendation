@@ -6,6 +6,8 @@ import Company from "../models/Company.js";
 import Job from "../models/Job.js";
 import UserAction from "../models/UserAction.js";
 import Application from "../models/Application.js";
+import Conversation from "../models/Conversation.js";
+import Message from "../models/Message.js";
 import { clearAppCollections } from "./resetDatabase.js";
 
 dotenv.config();
@@ -288,6 +290,9 @@ const seed = async () => {
     expectedSalaryMin: 95000,
     expectedSalaryMax: 145000,
     location: "Remote",
+    experienceSummary:
+      "Frontend engineer with 4+ years building React product interfaces, design systems, and performance-focused UI workflows.",
+    resumeUrl: "https://example.com/resumes/arya-frontend.pdf",
     onboardingCompleted: true,
     isEmailVerified: true
   });
@@ -307,6 +312,9 @@ const seed = async () => {
     expectedSalaryMin: 105000,
     expectedSalaryMax: 155000,
     location: "New York, NY",
+    experienceSummary:
+      "Backend engineer focused on APIs, data modeling, and containerized services for high-traffic applications.",
+    resumeUrl: "https://example.com/resumes/ravi-backend.pdf",
     onboardingCompleted: true,
     isEmailVerified: true
   });
@@ -326,6 +334,9 @@ const seed = async () => {
     expectedSalaryMin: 85000,
     expectedSalaryMax: 130000,
     location: "San Francisco, CA",
+    experienceSummary:
+      "Full stack developer shipping user-facing features across React frontends and Node-based backend services.",
+    resumeUrl: "https://example.com/resumes/mina-fullstack.pdf",
     onboardingCompleted: true,
     isEmailVerified: true
   });
@@ -345,6 +356,9 @@ const seed = async () => {
     expectedSalaryMin: 90000,
     expectedSalaryMax: 135000,
     location: "Remote",
+    experienceSummary:
+      "Product designer working across research, prototyping, and scalable design systems for web products.",
+    resumeUrl: "https://example.com/resumes/sara-design.pdf",
     onboardingCompleted: true,
     isEmailVerified: true
   });
@@ -693,30 +707,203 @@ const seed = async () => {
       user: userA._id,
       job: fullstackJob._id,
       company: fullstackJob.company,
-      status: "submitted"
+      status: "submitted",
+      resumeUrl: userA.resumeUrl
     },
     {
       user: userB._id,
       job: backendJob._id,
       company: backendJob.company,
-      status: "reviewing"
+      status: "reviewing",
+      resumeUrl: userB.resumeUrl
     },
     {
       user: userC._id,
       job: fullstackJob._id,
       company: fullstackJob.company,
-      status: "submitted"
+      status: "submitted",
+      resumeUrl: userC.resumeUrl
     },
     {
       user: userD._id,
       job: designJob._id,
       company: designJob.company,
-      status: "shortlisted"
+      status: "shortlisted",
+      resumeUrl: userD.resumeUrl
+    }
+  ]);
+
+  const firstConversationReadAt = new Date();
+  const firstConversationDeliveredAt = new Date(firstConversationReadAt.getTime() - 1000 * 60);
+  const firstConversationFirstMessageAt = new Date(firstConversationReadAt.getTime() - 1000 * 60 * 60);
+  const firstConversationLastMessageAt = new Date(firstConversationReadAt.getTime() - 1000 * 15);
+  const thirdConversationFirstMessageAt = new Date(firstConversationReadAt.getTime() - 1000 * 60 * 60 * 2);
+  const thirdConversationLastMessageAt = new Date(firstConversationReadAt.getTime() - 1000 * 90);
+
+  const userAppliedConversation = await Conversation.create({
+    user: userA._id,
+    company: fullstackJob.company,
+    initiatedBy: userA._id,
+    initiatedByRole: "USER",
+    unreadCounts: {
+      user: 1,
+      company: 0
+    },
+    lastMessage: {
+      text: "Thanks for applying. Are you available for a quick intro call tomorrow?",
+      senderId: fullstackJob.company,
+      senderRole: "COMPANY",
+      createdAt: firstConversationLastMessageAt
+    },
+    lastMessageAt: firstConversationLastMessageAt,
+    createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 60 * 60 * 5),
+    updatedAt: firstConversationLastMessageAt
+  });
+
+  const companyInitiatedConversation = await Conversation.create({
+    user: userC._id,
+    company: companyA._id,
+    initiatedBy: companyA._id,
+    initiatedByRole: "COMPANY",
+    unreadCounts: {
+      user: 0,
+      company: 0
+    },
+    lastMessage: {
+      text: "Yes, I am interested. Happy to share more about my recent projects.",
+      senderId: userC._id,
+      senderRole: "USER",
+      createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 5)
+    },
+    lastMessageAt: new Date(firstConversationReadAt.getTime() - 1000 * 5),
+    createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 60 * 60 * 24),
+    updatedAt: new Date(firstConversationReadAt.getTime() - 1000 * 5)
+  });
+
+  const pendingReplyConversation = await Conversation.create({
+    user: userB._id,
+    company: backendJob.company,
+    initiatedBy: backendJob.company,
+    initiatedByRole: "COMPANY",
+    unreadCounts: {
+      user: 0,
+      company: 1
+    },
+    lastMessage: {
+      text: "Yes, I can share details about my recent API and database work.",
+      senderId: userB._id,
+      senderRole: "USER",
+      createdAt: thirdConversationLastMessageAt
+    },
+    lastMessageAt: thirdConversationLastMessageAt,
+    createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 60 * 60 * 10),
+    updatedAt: thirdConversationLastMessageAt
+  });
+
+  await Message.insertMany([
+    {
+      conversation: userAppliedConversation._id,
+      senderId: userA._id,
+      senderRole: "USER",
+      receiverId: fullstackJob.company,
+      receiverRole: "COMPANY",
+      messageText: "Hi, I applied earlier today and wanted to confirm you received my application.",
+      status: "read",
+      deliveredAt: firstConversationDeliveredAt,
+      readAt: firstConversationReadAt,
+      createdAt: firstConversationFirstMessageAt,
+      updatedAt: firstConversationReadAt
+    },
+    {
+      conversation: userAppliedConversation._id,
+      senderId: fullstackJob.company,
+      senderRole: "COMPANY",
+      receiverId: userA._id,
+      receiverRole: "USER",
+      messageText: "Thanks for applying. Are you available for a quick intro call tomorrow?",
+      status: "delivered",
+      deliveredAt: new Date(firstConversationLastMessageAt.getTime() + 1000 * 20),
+      readAt: null,
+      createdAt: firstConversationLastMessageAt,
+      updatedAt: new Date(firstConversationLastMessageAt.getTime() + 1000 * 20)
+    },
+    {
+      conversation: companyInitiatedConversation._id,
+      senderId: companyA._id,
+      senderRole: "COMPANY",
+      receiverId: userC._id,
+      receiverRole: "USER",
+      messageText: "Your profile looks relevant for one of our product engineering roles. Open to a conversation?",
+      status: "read",
+      deliveredAt: new Date(firstConversationReadAt.getTime() - 1000 * 25),
+      readAt: new Date(firstConversationReadAt.getTime() - 1000 * 10),
+      createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 40),
+      updatedAt: new Date(firstConversationReadAt.getTime() - 1000 * 10)
+    },
+    {
+      conversation: companyInitiatedConversation._id,
+      senderId: userC._id,
+      senderRole: "USER",
+      receiverId: companyA._id,
+      receiverRole: "COMPANY",
+      messageText: "Yes, I am interested. Happy to share more about my recent projects.",
+      status: "read",
+      deliveredAt: new Date(firstConversationReadAt.getTime() - 1000 * 4),
+      readAt: new Date(firstConversationReadAt.getTime() - 1000 * 2),
+      createdAt: new Date(firstConversationReadAt.getTime() - 1000 * 5),
+      updatedAt: new Date(firstConversationReadAt.getTime() - 1000 * 2)
+    },
+    {
+      conversation: pendingReplyConversation._id,
+      senderId: backendJob.company,
+      senderRole: "COMPANY",
+      receiverId: userB._id,
+      receiverRole: "USER",
+      messageText: "We are reviewing your backend application now. Can you walk us through a recent scaling challenge you handled?",
+      status: "read",
+      deliveredAt: new Date(thirdConversationFirstMessageAt.getTime() + 1000 * 15),
+      readAt: new Date(thirdConversationFirstMessageAt.getTime() + 1000 * 45),
+      createdAt: thirdConversationFirstMessageAt,
+      updatedAt: new Date(thirdConversationFirstMessageAt.getTime() + 1000 * 45)
+    },
+    {
+      conversation: pendingReplyConversation._id,
+      senderId: userB._id,
+      senderRole: "USER",
+      receiverId: backendJob.company,
+      receiverRole: "COMPANY",
+      messageText: "Yes, I can share details about my recent API and database work.",
+      status: "sent",
+      deliveredAt: null,
+      readAt: null,
+      createdAt: thirdConversationLastMessageAt,
+      updatedAt: thirdConversationLastMessageAt
     }
   ]);
 
   console.log("Seed completed successfully");
   console.log(`Inserted jobs: ${jobs.length}`);
+  console.log("Seeded demo conversations:");
+  console.table([
+    {
+      thread: "User applied to company",
+      user: userA.email,
+      company: fullstackJob.company.toString(),
+      lastStatus: "delivered"
+    },
+    {
+      thread: "Company initiated outreach",
+      user: userC.email,
+      company: companyA._id.toString(),
+      lastStatus: "read"
+    },
+    {
+      thread: "Pending recruiter reply",
+      user: userB.email,
+      company: backendJob.company.toString(),
+      lastStatus: "sent"
+    }
+  ]);
   console.table([
     { role: "ADMIN", email: admin.email, password: "admin123" },
     { role: "COMPANY", email: companyUserA.email, password: "company123" },

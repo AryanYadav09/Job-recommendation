@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import PageTransition from "../components/PageTransition";
 import Loader from "../components/Loader";
 import CompanyVerificationBadge from "../components/CompanyVerificationBadge";
+import ProfileIdentityLink from "../components/ProfileIdentityLink";
 import { formatDate, formatJobType } from "../utils/format";
 
 const CompanyDashboardPage = () => {
@@ -262,7 +263,14 @@ const CompanyDashboardPage = () => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold">{app.user?.name}</p>
+                        <ProfileIdentityLink
+                          role="USER"
+                          id={app.user?._id}
+                          name={app.user?.name}
+                          size="sm"
+                          showAvatar={false}
+                          showSubtitle={false}
+                        />
                         <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                           {app.job?.title} | {formatDate(app.createdAt)}
                         </p>

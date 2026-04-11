@@ -78,6 +78,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: ""
     },
+    experienceSummary: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 3000
+    },
+    resumeUrl: {
+      type: String,
+      trim: true,
+      default: ""
+    },
     onboardingCompleted: {
       type: Boolean,
       default: function onboardingDefault() {

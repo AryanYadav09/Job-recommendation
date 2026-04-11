@@ -12,6 +12,7 @@ import jobRoutes from "./routes/jobRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 dotenv.config();
@@ -44,6 +45,7 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
